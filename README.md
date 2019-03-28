@@ -9,7 +9,9 @@
 <p>See the companion project https://github.com/org-asux/org.ASUX.yaml</p>
 
 <h2>The simplest and easiest way to get started?</h2>
-<p><b>Warning</b>: For now this project requires Bourne-Shell(or T-CSH) and Maven - to do anything. It will be a long-time, before it will run on a plain-vanilla Windows laptop.</p>
+<p><b>Note</b>: This project requires 3 things for you to make it work:</p>
+<ul><li>Bourne-Shell(my preference is TCSH)</li><li>git</li><li>Maven</li></ul>
+<p>It will be a long-time, before it will run on a plain-vanilla Windows laptop.</p>
 
 <p><code>$ git clone https://github.com/org-asux/org.ASUX.cmdline</code></p>
 <p><code>$ cd org.ASUX.cmdline</code></p>
