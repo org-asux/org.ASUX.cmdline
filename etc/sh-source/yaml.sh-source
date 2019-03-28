@@ -1,0 +1,5 @@
+## This file is expected to be sourced by asux.csh
+
+CMDCLASS=org.ASUX.yaml.Cmd
+
+#EoF
