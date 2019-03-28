@@ -15,8 +15,8 @@
 
 <p><code>$ git clone https://github.com/org-asux/org.ASUX.cmdline</code></p>
 <p><code>$ cd org.ASUX.cmdline</code></p>
-<p><code>$ ./asux.sh</code></p>
-<p><code>$ ./asux.csh</code></p>
+<p><code>$ asux</code></p>
+<p><code>$ ./asux.csh</code> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;-- for TCSH fans like me.</p>
 
 The first time you run the asux.sh command, it will automatically download everything it needs!
 
