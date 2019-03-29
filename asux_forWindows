@@ -1,22 +1,15 @@
 #!/bin/sh
 
-### The following line did NOT work on Windows
-# CMD="${BASH_SOURCE[0]}"
 CMD="$0"
 # echo $CMD
 RUNTIMEFLDR="$(DIRNAME "$CMD")"
 # echo "RUNTIMEFLDR = ${RUNTIMEFLDR}"
 
-if [ "$SystemRoot" = "C:\\WINDOWS" ]; then
-        echo "Detected Windows O/S"
-        exec sh "$0_forWindows"
-fi
-
 ##------------------------------
 if [ $# -le 2 ]; then
-    echo "Usage: $0 cmd [--verbose]  " > /dev/stderr 2>&1
-    echo 'Usage: $0 yaml [--verbose] -o /tmp/output2.yaml ' > /dev/stderr 2>&1
-    echo '' > /dev/stderr 2>&1
+    echo "Usage: $0 cmd [--verbose]  "
+    echo 'Usage: $0 yaml [--verbose] -o /tmp/output2.yaml '
+    echo ''
     exit 1
 fi
 
@@ -32,13 +25,13 @@ if [ -e "${DEPENDENCIESFILE}" ]; then
     # ls -la "${DEPENDENCIESFILE}"
     shift # get rid of $CMDGRP - from $*
 else
-    echo "${DEPENDENCIESFILE} does Not exist\!" > /dev/stderr 2>&1
+    echo "${DEPENDENCIESFILE} does Not exist\!" 
     exit 2
 fi
 
 which mvn > /dev/null
 if [ "$?" -ne 0 ]; then
-    echo "Unable to run MAVEN ('mvn' command)" > /dev/stderr 2>&1
+    echo "Unable to run MAVEN ('mvn' command)" 
     exit 9
 fi
 
@@ -82,9 +75,9 @@ while read line; do
         mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
             "-Dartifact=${groupId}:${artifactId}:${ver}"
         if [ "$status" != 0 ]; then
-            echo "MAVEN could NOT download project" > /dev/stderr 2>&1
+            echo "MAVEN could NOT download project" 
             echo mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
-                    "-Dartifact=${groupId}:${artifactId}:${ver}" > /dev/stderr 2>&1
+                    "-Dartifact=${groupId}:${artifactId}:${ver}" 
             exit 9
         fi
     fi
@@ -101,11 +94,9 @@ done < "${DEPENDENCIESFILE}"
 .  "${RUNTIMEFLDR}/etc/sh-source/$CMDGRP.sh-source"
 
 ##---------------------------------
-### If there are spaces inside the variables, then "$@" retains the spaces, while "$*" does not
-
 # echo \
-# exec java -cp "${CLASSPATH}" "${CMDCLASS}" $@
-exec java -cp "${CLASSPATH}" "${CMDCLASS}" $@
+# java -cp "${CLASSPATH}" "${CMDCLASS}" $@
+java -cp "${CLASSPATH}" "${CMDCLASS}" $@
 
 ##---------------------------------
 #EoScript
