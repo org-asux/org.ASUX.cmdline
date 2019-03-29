@@ -9,7 +9,8 @@ RUNTIMEFLDR="$(DIRNAME "$CMD")"
 
 if [ "$SystemRoot" = "C:\\WINDOWS" ]; then
         echo "Detected Windows O/S"
-        exec sh "$0_forWindows"
+        "${RUNTIMEFLDR}/asux_forWindows"
+        exit $? ### Windows does Not respond well to shell's EXEC
 fi
 
 ##------------------------------
