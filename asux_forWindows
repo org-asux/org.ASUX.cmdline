@@ -29,7 +29,7 @@ else
     exit 2
 fi
 
-which mvn > /dev/null
+where mvn
 if [ "$?" -ne 0 ]; then
     echo "Unable to run MAVEN ('mvn' command)" 
     exit 9
@@ -46,7 +46,7 @@ REGEXP='^\(.*\):\(.*\):jar:\([0-9]*\.[0-9.]*\)$'
 
 while read line; do
     # reading each line
-    expr "$line" : '^#.*' > /dev/null
+    expr "$line" : '^#.*'
     notAComment=$?
     if [ "$notAComment" = "0" ] || [ "$line" = "" ]; then
         ## echo "Skipping line: [$line]"
