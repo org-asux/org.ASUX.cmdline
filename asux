@@ -101,10 +101,10 @@ while read line; do
             else
                 echo \
                 mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
-                    -DgroupId=$GROUPID -DartifactId=${ARTIFACTID} -Dversion=${VERSION} \
-                    -Dpackaging=jar -DgeneratePom=true > /dev/stderr 2>&1
+                    -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${ver} \
+                    -Dpackaging=jar -DgeneratePom=true > /dev/stderr
                 mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
-                    -DgroupId=$GROUPID -DartifactId=${ARTIFACTID} -Dversion=${VERSION} \
+                    -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${ver} \
                     -Dpackaging=jar -DgeneratePom=true > /dev/stderr 2>&1
             fi
         fi
