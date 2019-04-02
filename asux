@@ -89,7 +89,10 @@ while read line; do
             echo "So.. Downloading from S3.  Not a secure way to do things." > /dev/stderr 2>&1
             JARFILENAME="${artifactId}-${ver}.jar"
             LOCALJARFILEPATH="/tmp/${JARFILENAME}"
-            S3FILENAME="{groupId}"."${artifactId}"."${artifactId}"-${ver}.jar
+            S3FILENAME="{groupId}"
+echo "S3FILENAME = '${S3FILENAME}'"
+            S3FILENAME="{S3FILENAME}"."${artifactId}"."${artifactId}"-${ver}.jar
+echo "S3FILENAME = '${S3FILENAME}'"
             echo \
             curl -f https://s3.amazonaws.com/org.asux.cmdline/${S3FILENAME}
             ## If the URL does NOT point to an ACTUAL file in S3, CURL will still get a RESPONSE from S3.
