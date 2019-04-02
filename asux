@@ -4,7 +4,7 @@
 # CMD="${BASH_SOURCE[0]}"
 CMD="$0"
 # echo $CMD
-RUNTIMEFLDR="$(DIRNAME "$CMD")"
+RUNTIMEFLDR="$(dirname "$CMD")"
 # echo "RUNTIMEFLDR = ${RUNTIMEFLDR}"
 
 if [ "$SystemRoot" = "C:\\WINDOWS" ]; then
@@ -84,11 +84,27 @@ while read line; do
             "-Dartifact=${groupId}:${artifactId}:${ver}"
         mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
             "-Dartifact=${groupId}:${artifactId}:${ver}"
-        if [ "$status" != 0 ]; then
-            echo "MAVEN could NOT download project" > /dev/stderr 2>&1
-            echo mvn org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
-                    "-Dartifact=${groupId}:${artifactId}:${ver}" > /dev/stderr 2>&1
-            exit 9
+        if [ "$?" != 0 ]; then
+            echo "MAVEN could NOT download project from MAVEN-CENTRAL" > /dev/stderr 2>&1
+            echo "So.. Downloading from S3.  Not a secure way to do things." > /dev/stderr 2>&1
+            LOCALJARFILEPATH="/tmp/${artifactId}-${ver}.jar"
+            echo \
+            curl -f https://s3.amazonaws.com/${groupId}.${artifactId}/${groupId}.${artifactId}.${artifactId}-${ver}.jar > ${LOCALJARFILEPATH}
+            ## If the URL does NOT point to an ACTUAL file in S3, CURL will still get a RESPONSE from S3.
+            ## So that we can tell whether a file was downloaded or not.. use curl -f
+            curl -f https://s3.amazonaws.com/${groupId}.${artifactId}/${groupId}.${artifactId}.${artifactId}-${ver}.jar > ${LOCALJARFILEPATH}
+            if [ "$?" != 0 ]; then
+                echo "Serious internal failure: Unable to install: " ${groupId}.${artifactId}-${ver}.jar
+                exit 9
+            else
+                echo \
+                mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
+                    -DgroupId=$GROUPID -DartifactId=${ARTIFACTID} -Dversion=${VERSION} \
+                    -Dpackaging=jar -DgeneratePom=true > /dev/stderr 2>&1
+                mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
+                    -DgroupId=$GROUPID -DartifactId=${ARTIFACTID} -Dversion=${VERSION} \
+                    -Dpackaging=jar -DgeneratePom=true > /dev/stderr 2>&1
+            fi
         fi
     fi
     ## ______________________
