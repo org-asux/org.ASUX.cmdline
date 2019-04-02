@@ -89,7 +89,7 @@ while read line; do
             echo "So.. Downloading from S3.  Not a secure way to do things." > /dev/stderr 2>&1
             LOCALJARFILEPATH="/tmp/${artifactId}-${ver}.jar"
             echo \
-            curl -f https://s3.amazonaws.com/${groupId}.${artifactId}/${groupId}.${artifactId}.${artifactId}-${ver}.jar > ${LOCALJARFILEPATH}
+            curl -f https://s3.amazonaws.com/org.asux.cmdline/{groupId}.${artifactId}.${artifactId}-${ver}.jar
             ## If the URL does NOT point to an ACTUAL file in S3, CURL will still get a RESPONSE from S3.
             ## So that we can tell whether a file was downloaded or not.. use curl -f
             curl -f https://s3.amazonaws.com/${groupId}.${artifactId}/${groupId}.${artifactId}.${artifactId}-${ver}.jar > ${LOCALJARFILEPATH}
