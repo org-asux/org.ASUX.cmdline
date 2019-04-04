@@ -7,6 +7,7 @@ CMD="$0"
 RUNTIMEFLDR="$(dirname "$CMD")"
 # echo "RUNTIMEFLDR = ${RUNTIMEFLDR}"
 
+##------------------------------
 if [ "$SystemRoot" = "C:\\WINDOWS" ]; then
         echo "Detected Windows O/S"
         echo \
@@ -17,7 +18,7 @@ fi
 
 ##------------------------------
 if [ $# -le 2 ]; then
-    echo "Usage: $0 cmd [--verbose]  " > /dev/stderr 2>&1
+    echo "Usage: $0 <cmd> [--verbose]  " > /dev/stderr 2>&1
     echo 'Usage: $0 yaml [--verbose] -o /tmp/output2.yaml ' > /dev/stderr 2>&1
     echo '' > /dev/stderr 2>&1
     exit 1
@@ -26,6 +27,10 @@ fi
 ##------------------------------
 MAVENLOCALREPO=`echo ~/.m2/repository`
 # echo "MAVENLOCALREPO = '${MAVENLOCALREPO}'"
+
+### Dont care if this command fails, but let's BARF all over user if something fails.
+### git pull  >/dev/null 2>&1
+git pull --quiet > /dev/stderr 2>&1
 
 ##------------------------------
 CMDGRP="$1"
@@ -79,31 +84,34 @@ while read line; do
         ## ls -la "${folderpath}/${filename}"
     else
         ## So.. JAR does Not exist already in LOCAL m2 repository
+        echo "downloading to ${MAVENLOCALREPO} .. "
         echo \
         mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
             "-Dartifact=${groupId}:${artifactId}:${ver}"
         mvn -q org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get -DrepoUrl=url \
-            "-Dartifact=${groupId}:${artifactId}:${ver}"
+            "-Dartifact=${groupId}:${artifactId}:${ver}"  > /dev/stderr 2>&1
         if [ "$?" != 0 ]; then
             echo "MAVEN could NOT download project from MAVEN-CENTRAL" > /dev/stderr 2>&1
             echo "So.. Downloading from S3.  Not a secure way to do things." > /dev/stderr 2>&1
             JARFILENAME="${artifactId}-${ver}.jar"
             LOCALJARFILEPATH="/tmp/${JARFILENAME}"
-            S3FILENAME="${groupId}.${artifactId}"."${artifactId}-${ver}.jar"
+            S3FILENAME="${groupId}.${artifactId}.${artifactId}-${ver}.jar"
             echo \
-            curl -f https://s3.amazonaws.com/org.asux.cmdline/${S3FILENAME}
-            ## If the URL does NOT point to an ACTUAL file in S3, CURL will still get a RESPONSE from S3.
-            ## So that we can tell whether a file was downloaded or not.. use curl -f
-            curl -f https://s3.amazonaws.com/org.asux.cmdline/${S3FILENAME} > ${LOCALJARFILEPATH}
-            if [ "$?" != 0 ]; then
+            curl --silent -f https://s3.amazonaws.com/org.asux.cmdline/${S3FILENAME}
+            ### If the URL does NOT point to an ACTUAL file in S3, CURL will still get a RESPONSE from S3.
+            ### So that we can tell whether a file was downloaded or not.. use curl -f
+            curl --silent -f https://s3.amazonaws.com/org.asux.cmdline/${S3FILENAME} \
+                    > ${LOCALJARFILEPATH}
+            ### Either the above CURL command returned a NON-zero error code, or an empty file
+            if [ "$?" != 0 ] || [ ! -s ${LOCALJARFILEPATH} ]; then
                 echo "Serious internal failure: Unable to install: " ${groupId}.${artifactId}-${ver}.jar
                 exit 9
             else
                 echo \
-                mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
+                mvn -q install:install-file -Dfile=${LOCALJARFILEPATH} \
                     -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${ver} \
                     -Dpackaging=jar -DgeneratePom=true > /dev/stderr
-                mvn install:install-file -Dfile=${LOCALJARFILEPATH} \
+                mvn -q install:install-file -Dfile=${LOCALJARFILEPATH} \
                     -DgroupId=${groupId} -DartifactId=${artifactId} -Dversion=${ver} \
                     -Dpackaging=jar -DgeneratePom=true > /dev/stderr 2>&1
             fi
