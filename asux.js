@@ -48,8 +48,8 @@ CmdLine.on('--help', function(){
   console.log('Examples:');
   console.log('  $ %s --help', __filename);
   console.log('  $ %s --version', __filename);
-  console.log('  $ %s --verbose yaml .. ..', __filename);
-  console.log('  $ %s --no-verbose aws cfn .. ..', __filename);
+  console.log('  $ %s --verbose read .. ..', __filename);
+  console.log('  $ %s --no-verbose delete .. ..', __filename);
 });
 
 //==========================
@@ -61,7 +61,13 @@ CmdLine.on('option:verbose', function () {
   process.env.VERBOSE = this.verbose;
 });
 
-/// Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
+CmdLine.on('command:read', function () {
+  // if (process.env.VERBOSE)
+  console.log("Yeah.  processing YAML READ-command");
+	readYAMLCmd();
+});
+
+// Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
 // If we end up here, then .. Show error about unknown command
 CmdLine.on('command:*', function () {
   console.error('Invalid command: %s\nSee --help for a list of available commands.', CmdLine.args.join(' '));
@@ -71,8 +77,23 @@ CmdLine.on('command:*', function () {
 //==========================
 CmdLine.parse(process.argv);
 
-//==========================
+//============================================================
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//============================================================
 
+function readYAMLCmd() {
+  console.log("enter some input! >>");
+  var stdinObj = process.openStdin();
+  stdinObj.addListener('data', function(d) {
+      // note:  d is an object, and when converted to a string it will end with a linefeed.
+      // so we (rather crudely) account for that with toString() and then trim() 
+      console.log("you entered: [" +  d.toString().trim() + "]");
+    });
+} // end function sendArgs2CmdlineModule
+
+//============================================================
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//============================================================
 
 // The Node.js process will exit on its own if there is no additional work pending in the event loop.
 // The process.exitCode property can be set to tell the process which exit code to use when the process exits gracefully.
