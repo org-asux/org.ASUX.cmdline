@@ -1,0 +1,7 @@
+// This file is expected to be sourced by asux.js (by Javascript code)
+
+module.exports = {
+	'CMDCLASS' : 'org.ASUX.yaml.Cmd'
+}
+
+//EoF
