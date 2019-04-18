@@ -16,17 +16,11 @@ var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_p
 var EXECUTESHELLCMD = require( __dirname + "/../ExecShellCommand.js");
 var WEBACTIONCMD = require( __dirname + "/../WebActionCmd.js" );
 
-var CMDGRP="yaml";
+var CMDGRP="yaml"; // this entire file is about this CMDGRP
+var CMD="none";
 var CLASSPATH='';
 
 //==========================
-CmdLine
-	.version('1.0', '-v, --version')
-	.usage('[options] <commands ...>')
-	.option('--verbose', 'A value that can be increased by repeating', 0)
-	;
-
-///==========================
 /* attach options to a command */
 /* if a command does NOT define an action (see .action invocation), then the options are NOT validated */
 /* For Git-like submodule commands.. ..
@@ -38,6 +32,9 @@ CmdLine
 */
 
 CmdLine
+	.version('1.0', '-v, --version')
+	.usage('[options] <commands ...>')
+	.option('--verbose', 'A value that can be increased by repeating', 0)
 .command('read ...', 'read/query/ content from YAML files', { isDefault: false, noHelp: true } )
 .command('list ...', 'list RHS-content from YAML files', { isDefault: false, noHelp: true } )
 .command('delete ...', 'delete content from YAML files', { isDefault: false, noHelp: true } )
@@ -66,8 +63,23 @@ CmdLine.on('option:verbose', function () {
 });
 
 CmdLine.on('command:read', function () {
-  if (process.env.VERBOSE) console.log("Yeah.  processing YAML READ-command");;
-  readYAMLCmd();
+  CMD="read";
+  processYAMLCmd('read');
+});
+
+CmdLine.on('command:list', function () {
+  CMD="list";
+  processYAMLCmd('list');
+});
+
+CmdLine.on('command:replace', function () {
+  CMD="replace";
+  processYAMLCmd('replace');
+});
+
+CmdLine.on('command:delete', function () {
+  CMD="delete";
+  processYAMLCmd('delete');
 });
 
 // Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
@@ -84,9 +96,10 @@ CmdLine.parse(process.argv);
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 //============================================================
 
-function readYAMLCmd() {
+function processYAMLCmd( _CMD) {
 
   var bIsMavenInstalled; // When you declare a variable by having a var in a block-statement, but haven't yet assigned a value to it, it is undefined.
+  var bAnyChanges2JARs = false;
   const DependenciesFile=__dirname + "/etc/classpaths/"+ CMDGRP +"-cmd.dependencies";
   // fs.access( DependenciesFile, function(err11) {.. .. ..} );
   if (process.env.VERBOSE)console.log( `checking if ${DependenciesFile} exists or not.. .. ` );
@@ -95,7 +108,7 @@ function readYAMLCmd() {
   try {
       const dataBuffer = fs.readFileSync( DependenciesFile ); //  {encoding: "utf-8", flag: "r"}
       const data = dataBuffer.toString();
-      if (process.env.VERBOSE) console.log(__filename +" file contents of DependenciesFile: ["+ DependenciesFile +"]\n"+ data +"\n");
+      if (process.env.VERBOSE) console.log( __filename +" file contents of DependenciesFile: ["+ DependenciesFile +"]\n"+ data +"\n");
 
       // now .. check if Maven exists & set bIsMavenInstalled to either true or false (it is initiatlized above to undefined)
       if ( bIsMavenInstalled == undefined ) {
@@ -112,10 +125,10 @@ function readYAMLCmd() {
       const lines = data.split('\n');
       for (var ix in lines) {
         const line = lines[ix];
-        if (process.env.VERBOSE) console.log(__filename +" file contents of DependenciesFile: line #"+ ix +" = ["+ line +"]");
+        if (process.env.VERBOSE) console.log( __filename +" file contents of DependenciesFile: line #"+ ix +" = ["+ line +"]");
         if ( line.match('^#') ) continue;
         if ( line.match('^[\s\S]*$') ) continue;
-        if (process.env.VERBOSE) console.log(__filename +" file contents of DependenciesFile: line #"+ ix +" = ["+ line +"]");
+        if (process.env.VERBOSE) console.log( __filename +" file contents of DependenciesFile: line #"+ ix +" = ["+ line +"]");
 
         // ______________________
         // function replStrFunc (match, p1, p2, p3, offset, string) { return match; }
@@ -135,13 +148,15 @@ function readYAMLCmd() {
         const S3FileName=`${groupId}.${artifactId}.${artifactId}-${version}.jar`;
         const URL1 = `https://s3.amazonaws.com/org.asux.cmdline/${S3FileName}`;
 
-        if (process.env.VERBOSE) console.log(__filename +": ["+ groupId +'.'+ artifactId +':'+ version +"]");
-        if (process.env.VERBOSE) console.log(__filename +": ["+ folderpath +'\t\t'+ MVNfolderpath +'\t\t'+ MVNJARFilePath +"]");
+        if (process.env.VERBOSE) console.log( __filename +": ["+ groupId +'.'+ artifactId +':'+ version +"]");
+        if (process.env.VERBOSE) console.log( __filename +": ["+ folderpath +'\t\t'+ MVNfolderpath +'\t\t'+ MVNJARFilePath +"]");
 
         // ______________________
         if ( bIsMavenInstalled ) {
 
-          // Let's see if the project is already in ~/.m2/repository
+          var bJARFileExists = false;
+
+          // Let's see if the project's JAR File is already in ~/.m2/repository
           try {
             // if (process.env.VERBOSE) ÷console.log( `checking if ${MVNJARFilePath} exists or not.. .. ` );
             fs.accessSync( MVNJARFilePath ); // will throw.
@@ -149,68 +164,87 @@ function readYAMLCmd() {
             if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( MVNJARFilePath );  // ls -la "${MVNJARFilePath}"
             CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
+            bJARFileExists = true;
           } catch (err12) { // a.k.a. if fs.accessSync throws err12.code === 'ENOENT')
+
+            try {
+              if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} already downloaded or not.. .. ` );
+              fs.accessSync( LocalJARFilePath ); // will throw.
+              // Ok. JAR file already exists in local file system
+              if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
+              CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+              if (process.env.VERBOSE) console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
+              bJARFileExists = true;
+            } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
+              // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
+            } // try-catch err15 for accessSync( LocalJARFilePath )
+
+          } // try-catch err12 for accessSync( MVNJARFilePath )
+
+          if (  ! bJARFileExists ) {
+
             // So.. MVNJARFilePath does Not exist already in LOCAL m2 repository
-            console.error( `Hmmm. ${MVNJARFilePath} does Not exist.\n\t${err12.message}` );
+            bAnyChanges2JARs = true; // well, something will be new once code below executes!
+            console.error( `Hmmm. ${MVNJARFilePath} does Not exist locally.` );
             const cmdArgs = ['-q', 'org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get', '-DrepoUrl=url', `-Dartifact=${groupId}:${artifactId}:${version}` ];
-            if (process.env.VERBOSE) console.log(__filename + ": About to run mvn "+ cmdArgs.join(' ') );
+            if (process.env.VERBOSE) console.log( __filename + ": About to run mvn "+ cmdArgs.join(' ') );
 
             const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
             if ( retCode == 0 ) {
               CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
-              console.log(__filename +": CLASSPATH = ["+ CLASSPATH +"]");
+              console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
             }else{
               console.error( `MAVEN could NOT download project ${groupId}.${artifactId}:${version} from MAVEN-CENTRAL`);
               console.error( "So.. Downloading from S3.  *** Not a secure way to do things ***"  );
+              EXECUTESHELLCMD.sleep(5);
 
-                try {
-                  if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} already downloaded or not.. .. ` );
-                  fs.accessSync( LocalJARFilePath ); // will throw.
-                  // Ok. JAR file already exists in local file system
-                  if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
-                  CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
-                  // if (process.env.VERBOSE)
-                  console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
-                } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
-                  // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
-                  // If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
-                  // So that we can tell whether a file was downloaded or not.. use "curl -f"
-                  // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
-                  var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
+                // try {
+                //   if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} already downloaded or not.. .. ` );
+                //   fs.accessSync( LocalJARFilePath ); // will throw.
+                //   // Ok. JAR file already exists in local file system
+                //   if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
+                //   CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+                //   if (process.env.VERBOSE) console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
+                // } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
+                // }
 
-                  if ( httpStatusCode != 200 ) {
-                    console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
-                    console.error( __filename + ": httpMessage = ["+ errMsg +"]");
-                    process.exit(27);
-                  } else { // if-else httpStatusCode returned 200
-                    // Either the above get URL command returned a NON-zero error code, or an empty file
-                    const fstats = fs.statSync(LocalJARFilePath);
-                    if ( fstats.size <= 0 ) { // file is zero bytes!!!
-                      console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
-                      process.exit(28);
-                    }
-                    // all ok with LocalJARFilePath
-                    const cmdArgs = ['-q', `install:install-file -Dfile=${LocalJARFilePath}`, `-DgroupId=${groupId}`, `-DartifactId=${artifactId}`, `-Dversion=${version}`, '-Dpackaging=jar', '-DgeneratePom=true' ];
-                    // if (process.env.VERBOSE) 
-                    console.log( `${__filename} : in /tmp running 'mvn' with cmdline-arguments:` + cmdArgs.join(' ') );
-                    const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
-                    if ( retCode == 0 ) {
-                      CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
-                      console.log(__filename +": mvn-install succeeded, so using CLASSPATH = ["+ CLASSPATH +"]");
-                    }else{
-                      CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
-                      console.log(__filename +": MVN install FAILED!!!!!!  So.. using LocalJARFile CLASSPATH = ["+ CLASSPATH +"]");
-                      // console.error( `Internal Fatal error. Unable to install ${MVNJARFilePath} to ${MAVENLOCALREPO}.\n${err12}\n` );
-                      // process.exit(28);
-                    }
+                // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
 
-                  } // if-else httpStatusCode
+                // If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
+                // So that we can tell whether a file was downloaded or not.. use "curl -f"
+                // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
+                var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
 
-                } // try-catch err15 for accessSync( LocalJARFilePath )
+                if ( httpStatusCode != 200 ) {
+                  console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
+                  console.error( __filename + ": httpMessage = ["+ errMsg +"]");
+                  process.exit(27);
+                } else { // if-else httpStatusCode returned 200
+                  // Either the above get URL command returned a NON-zero error code, or an empty file
+                  const fstats = fs.statSync(LocalJARFilePath);
+                  if ( fstats.size <= 0 ) { // file is zero bytes!!!
+                    console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
+                    process.exit(28);
+                  }
+                  // all ok with LocalJARFilePath
+                  const cmdArgs = ['-q', `install:install-file -Dfile=${LocalJARFilePath}`, `-DgroupId=${groupId}`, `-DartifactId=${artifactId}`, `-Dversion=${version}`, '-Dpackaging=jar', '-DgeneratePom=true' ];
+                  // if (process.env.VERBOSE) 
+                  console.log( `${__filename} : in /tmp running 'mvn' with cmdline-arguments:` + cmdArgs.join(' ') );
+                  const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
+                  if ( retCode == 0 ) {
+                    CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
+                    console.log( __filename +": mvn-install succeeded, so using CLASSPATH = ["+ CLASSPATH +"]");
+                  }else{
+                    CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+                    console.log( __filename +": MVN install FAILED!!!!!!  So.. using LocalJARFile CLASSPATH = ["+ CLASSPATH +"]");
+                    // console.error( __filename +`Internal Fatal error. Unable to install ${MVNJARFilePath} to ${MAVENLOCALREPO}.` );
+                    // process.exit(28);
+                  }
 
-              } // if-else retCode
+                } // if-else httpStatusCode
 
-            } // try-catch err12 for accessSync( MVNJARFilePath )
+            } // if-else retCode
+          } // if ! bJARFileExists
 
         } else { // if bIsMavenInstalled
 
@@ -223,9 +257,10 @@ function readYAMLCmd() {
             EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );
             CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
-          } catch (err14) { // a.k.a. if  err12.code === 'ENOENT')
+          } catch (err14) { // a.k.a. if  err14.code === 'ENOENT')
 
-          // So.. LocalJARFilePath does *** NOT *** exist in local file system
+            // So.. LocalJARFilePath does *** NOT *** exist in local file system
+            bAnyChanges2JARs = true; // well, something will be new once code below executes!
             console.error( `Hmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}\n` );
             console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
             // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
@@ -252,37 +287,50 @@ function readYAMLCmd() {
 
       } // for lineObj of iterator
 
-    } catch (err13) { // a.k.a. if fs.readFileSync throws err12.code === 'ENOENT' || 'EISDIR')
-      console.error("Internal error: failed to read DependenciesFile: ["+ DependenciesFile +"]\n"+ err13);
+    } catch (err13) { // a.k.a. if fs.readFileSync throws err13.code === 'ENOENT' || 'EISDIR')
+      console.error( __filename +"Internal error: failed to read DependenciesFile: ["+ DependenciesFile +"]\n"+ err13);
       process.exit(23);
   }; // try-catch of fs.readFileSync ( DependenciesFile .. )
 
+	//--------------------
   // if (process.env.VERBOSE)
-  console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
+  if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
   // ${CMDCLASS} is defined inside this properties file
   const props = require ( `${__dirname}/etc/js-source/${CMDGRP}.js-source` )
+  if ( bAnyChanges2JARs ) console.log('\n\n'); // well, "setup" output was observed by end-user.. so, put a couple of blank lines for readability.
 
 	//--------------------
 	// In Unix shell, If there are spaces inside the variables, then "$@" retains the spaces, while "$*" does not
 	// The following lines of code are the JS-quivalent of shell's      ./cmdline/asux $@
-	// Get rid of 'node' '--verbose'(optionally) and 'asux.js'.. .. and finally the 'yaml/asux' command
-	var cmdArgs = process.argv.slice( process.env.VERBOSE ? 4 : 3 );
+  // Get rid of 'node' '--verbose'(optionally) and 'asux.js'.. .. and finally the 'yaml/asux' command
+
+
+  // Example: I see:     /usr/local/Cellar/node/10.2.1/bin/node /private/tmp/org.ASUX/cmdline/asux.js read --yamlpath s* --inputfile /tmp/nano.yaml
+  // NOTE: Since we are in the sub-module .. .. org.ASUX/asux.js will REMOVE the 'yaml' or 'aws' command - from the ARGV cmd line
+
+
+  var cmdArgs = process.argv.slice( ( process.argv[0].match('.*node$') )? 2: 1 ); // get rid of BOTH 'node' and 'asux.js'
+  if ( cmdArgs[2] == '--verbose' ) cmdArgs = cmdArgs.slice( 1 );
+  // Now, JSON's Commander-library only allows 'read' as a command.
+  // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'
+  cmdArgs[0] = '--' + cmdArgs[0]; // convert 'read' into '--read'
 	cmdArgs.splice(0,0, '-cp' ); // insert ./asux.js as the 1st cmdline parameter
 	cmdArgs.splice(1,0, CLASSPATH ); // insert CLASSPATH as the 2nd cmdline parameter
 	cmdArgs.splice(2,0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as the 3rd cmdline parameter
-	if (process.env.VERBOSE) cmdArgs.splice( 3, 0, '--verbose' ); // optionally, insert '--verbose' as the 4th cmdline parameter (going to my Cmd.java)
+  if (process.env.VERBOSE) cmdArgs.splice( 3, 0, '--verbose' ); // optionally, insert '--verbose' as the 4th cmdline parameter (going to my Cmd.java)
   // if (process.env.VERBOSE) 
-  console.log( `${__filename} : in /tmp running 'java' with cmdline-arguments:` + cmdArgs.join(' ') );
+  if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
+
   const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
   if ( retCode == 0 ) {
-    console.log(__filename +": Done!");
+    if (process.env.VERBOSE) console.log( "\n"+ __filename +": Done!");
     process.exitCode = 0;
   }else{
-    console.error(__filename +": Failed with error-code "+ retCode +" for: "+ props['CMDCLASS'] +" "+ cmdArgs.join(' '));
+    console.error( __filename +": Failed with error-code "+ retCode +" for: "+ props['CMDCLASS'] +" "+ cmdArgs.join(' '));
     process.exit(retCode);
   }
 
-} // end function readYAMLCmd
+} // end function processYAMLCmd
 
 //============================================================
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
