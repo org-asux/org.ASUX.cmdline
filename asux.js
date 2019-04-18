@@ -101,12 +101,11 @@ function processYAMLCmd( _CMD) {
   var bIsMavenInstalled; // When you declare a variable by having a var in a block-statement, but haven't yet assigned a value to it, it is undefined.
   var bAnyChanges2JARs = false;
   const DependenciesFile=__dirname + "/etc/classpaths/"+ CMDGRP +"-cmd.dependencies";
-  // fs.access( DependenciesFile, function(err11) {.. .. ..} );
-  if (process.env.VERBOSE)console.log( `checking if ${DependenciesFile} exists or not.. .. ` );
 
-  // fs.readFile( DependenciesFile,  "utf-8",  (err13, data) => {}
+
   try {
-      const dataBuffer = fs.readFileSync( DependenciesFile ); //  {encoding: "utf-8", flag: "r"}
+      if (process.env.VERBOSE)console.log( `checking if ${DependenciesFile} exists or not.. .. ` );
+      const dataBuffer = fs.readFileSync( DependenciesFile ); // the default-FLAGs are === {encoding: "utf-8", flag: "r"}
       const data = dataBuffer.toString();
       if (process.env.VERBOSE) console.log( __filename +" file contents of DependenciesFile: ["+ DependenciesFile +"]\n"+ data +"\n");
 
@@ -159,7 +158,7 @@ function processYAMLCmd( _CMD) {
           // Let's see if the project's JAR File is already in ~/.m2/repository
           try {
             // if (process.env.VERBOSE) ÷console.log( `checking if ${MVNJARFilePath} exists or not.. .. ` );
-            fs.accessSync( MVNJARFilePath ); // will throw.
+            fs.accessSync( MVNJARFilePath, fs.constants.R_OK ); // will throw.
             // Ok. JAR file already exists ~/.m2
             if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( MVNJARFilePath );  // ls -la "${MVNJARFilePath}"
             CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
@@ -169,7 +168,7 @@ function processYAMLCmd( _CMD) {
 
             try {
               if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} already downloaded or not.. .. ` );
-              fs.accessSync( LocalJARFilePath ); // will throw.
+              fs.accessSync( LocalJARFilePath, fs.constants.R_OK | fs.constants.W_OK ); // will throw.
               // Ok. JAR file already exists in local file system
               if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
               CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
@@ -177,13 +176,15 @@ function processYAMLCmd( _CMD) {
               bJARFileExists = true;
             } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
               // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
+              // Just let program-pointer fall thru to code below (with bJARFileExists == false)
+              // do NOTHING.
             } // try-catch err15 for accessSync( LocalJARFilePath )
 
           } // try-catch err12 for accessSync( MVNJARFilePath )
 
           if (  ! bJARFileExists ) {
 
-            // So.. MVNJARFilePath does Not exist already in LOCAL m2 repository
+            // So.. MVNJARFilePath does Not exist - - NEITHER in ~/.m2/repository - NOR in /tmpdist
             bAnyChanges2JARs = true; // well, something will be new once code below executes!
             console.error( `Hmmm. ${MVNJARFilePath} does Not exist locally.` );
             const cmdArgs = ['-q', 'org.apache.maven.plugins:maven-dependency-plugin:3.1.1:get', '-DrepoUrl=url', `-Dartifact=${groupId}:${artifactId}:${version}` ];
