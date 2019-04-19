@@ -307,21 +307,30 @@ function processYAMLCmd( _CMD) {
   // Get rid of 'node' '--verbose'(optionally) and 'asux.js'.. .. and finally the 'yaml/asux' command
 
 
-  // Example: I see:     /usr/local/Cellar/node/10.2.1/bin/node /private/tmp/org.ASUX/cmdline/asux.js read --yamlpath s* --inputfile /tmp/nano.yaml
+  // Example: I see (on linux):     /usr/local/Cellar/node/10.2.1/bin/node /tmp/org.ASUX/cmdline/asux.js read --yamlpath s* --inputfile /tmp/nano.yaml
+  // Example: I see (on Windows):   c:/program files/nodejs/node.exe  /tmp/org.ASUX/cmdline/asux.js read --yamlpath s* --inputfile /tmp/nano.yaml
   // NOTE: Since we are in the sub-module .. .. org.ASUX/asux.js will REMOVE the 'yaml' or 'aws' command - from the ARGV cmd line
 
 
-  var cmdArgs = process.argv.slice( ( process.argv[0].match('.*node$') )? 2: 1 ); // get rid of BOTH 'node' and 'asux.js'
-  if ( cmdArgs[2] == '--verbose' ) cmdArgs = cmdArgs.slice( 1 );
+	if (process.env.VERBOSE) { console.log( `${__filename} : started off with node ` + process.argv.join(' ') ); }
+  var cmdArgs = process.argv.slice( ( process.argv[0].match('.*node(.exe)?$') )? 2: 1 ); // get rid of BOTH 'node' and 'asux.js'
+  if ( cmdArgs[0] == '--verbose' ) cmdArgs = cmdArgs.slice( 1 ); // get rid of --verbose - for now.  We'll insert it back in the right place.
   // Now, JSON's Commander-library only allows 'read' as a command.
   // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'
-  cmdArgs[0] = '--' + cmdArgs[0]; // convert 'read' into '--read'
+  cmdArgs[0] = '--' + cmdArgs[0]; // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
 	cmdArgs.splice(0,0, '-cp' ); // insert ./asux.js as the 1st cmdline parameter
 	cmdArgs.splice(1,0, CLASSPATH ); // insert CLASSPATH as the 2nd cmdline parameter
 	cmdArgs.splice(2,0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as the 3rd cmdline parameter
   if (process.env.VERBOSE) cmdArgs.splice( 3, 0, '--verbose' ); // optionally, insert '--verbose' as the 4th cmdline parameter (going to my Cmd.java)
   // if (process.env.VERBOSE) 
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
+
+	var prms = process.argv.slice( process.env.VERBOSE ? 4 : 3 );
+	prms.splice(0,0, './asux.js' ); // insert ./asux.js as the 1st cmdline parameter
+	if (process.env.VERBOSE) prms.splice( 1, 0, '--verbose' ); // optionally, insert '--verbose' as the 2nd cmdline parameter
+	if (process.env.VERBOSE) { console.log( `${__filename} : in ${subdir} running 'node' with cmdline-arguments:` + prms.join(' ') ); }
+	EXECUTESHELLCMD.executeSubModule(  subdir, 'node', prms, false, process.env.VERBOSE, false, null );
+
 
   const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
   if ( retCode == 0 ) {
