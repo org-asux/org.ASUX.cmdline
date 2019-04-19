@@ -19,6 +19,7 @@ var WEBACTIONCMD = require( __dirname + "/../WebActionCmd.js" );
 var CMDGRP="yaml"; // this entire file is about this CMDGRP
 var CMD="none";
 var CLASSPATH='';
+var CLASSPATHSEPARATOR= (process.platform == 'win32')? ';' : ':';
 
 //==========================
 /* attach options to a command */
@@ -161,7 +162,7 @@ function processYAMLCmd( _CMD) {
             fs.accessSync( MVNJARFilePath, fs.constants.R_OK ); // will throw.
             // Ok. JAR file already exists ~/.m2
             if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( MVNJARFilePath );  // ls -la "${MVNJARFilePath}"
-            CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
+            CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
             bJARFileExists = true;
           } catch (err12) { // a.k.a. if fs.accessSync throws err12.code === 'ENOENT')
@@ -171,7 +172,7 @@ function processYAMLCmd( _CMD) {
               fs.accessSync( LocalJARFilePath, fs.constants.R_OK | fs.constants.W_OK ); // will throw.
               // Ok. JAR file already exists in local file system
               if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
-              CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+              CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
               if (process.env.VERBOSE) console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
               bJARFileExists = true;
             } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
@@ -192,7 +193,7 @@ function processYAMLCmd( _CMD) {
 
             const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
             if ( retCode == 0 ) {
-              CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
+              CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
               console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
             }else{
               console.error( `MAVEN could NOT download project ${groupId}.${artifactId}:${version} from MAVEN-CENTRAL`);
@@ -204,7 +205,7 @@ function processYAMLCmd( _CMD) {
                 //   fs.accessSync( LocalJARFilePath ); // will throw.
                 //   // Ok. JAR file already exists in local file system
                 //   if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
-                //   CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+                //   CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
                 //   if (process.env.VERBOSE) console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
                 // } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
                 // }
@@ -233,10 +234,10 @@ function processYAMLCmd( _CMD) {
                   console.log( `${__filename} : in /tmp running 'mvn' with cmdline-arguments:` + cmdArgs.join(' ') );
                   const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
                   if ( retCode == 0 ) {
-                    CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
+                    CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
                     console.log( __filename +": mvn-install succeeded, so using CLASSPATH = ["+ CLASSPATH +"]");
                   }else{
-                    CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+                    CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
                     console.log( __filename +": MVN install FAILED!!!!!!  So.. using LocalJARFile CLASSPATH = ["+ CLASSPATH +"]");
                     // console.error( __filename +`Internal Fatal error. Unable to install ${MVNJARFilePath} to ${MAVENLOCALREPO}.` );
                     // process.exit(28);
@@ -256,7 +257,7 @@ function processYAMLCmd( _CMD) {
             fs.accessSync( LocalJARFilePath ); // will throw.
             // Ok. JAR file already exists locally on file-system
             EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );
-            CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+            CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
           } catch (err14) { // a.k.a. if  err14.code === 'ENOENT')
 
@@ -278,7 +279,7 @@ function processYAMLCmd( _CMD) {
                   process.exit(28);
                 }
                 // all ok with LocalJARFilePath
-                CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
+                CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
                 if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
               } // if-else httpStatusCode
 
