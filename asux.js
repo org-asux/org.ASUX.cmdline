@@ -256,7 +256,7 @@ function processYAMLCmd( _CMD) {
             fs.accessSync( LocalJARFilePath ); // will throw.
             // Ok. JAR file already exists locally on file-system
             EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );
-            CLASSPATH=`${CLASSPATH}:${MVNJARFilePath}`;
+            CLASSPATH=`${CLASSPATH}:${LocalJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
           } catch (err14) { // a.k.a. if  err14.code === 'ENOENT')
 
