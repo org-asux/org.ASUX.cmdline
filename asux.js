@@ -325,13 +325,6 @@ function processYAMLCmd( _CMD) {
   // if (process.env.VERBOSE) 
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
-	var prms = process.argv.slice( process.env.VERBOSE ? 4 : 3 );
-	prms.splice(0,0, './asux.js' ); // insert ./asux.js as the 1st cmdline parameter
-	if (process.env.VERBOSE) prms.splice( 1, 0, '--verbose' ); // optionally, insert '--verbose' as the 2nd cmdline parameter
-	if (process.env.VERBOSE) { console.log( `${__filename} : in ${subdir} running 'node' with cmdline-arguments:` + prms.join(' ') ); }
-	EXECUTESHELLCMD.executeSubModule(  subdir, 'node', prms, false, process.env.VERBOSE, false, null );
-
-
   const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
   if ( retCode == 0 ) {
     if (process.env.VERBOSE) console.log( "\n"+ __filename +": Done!");
