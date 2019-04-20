@@ -105,7 +105,8 @@ function processYAMLCmd( _CMD) {
 
 
   try {
-      if (process.env.VERBOSE)console.log( `checking if ${DependenciesFile} exists or not.. .. ` );
+
+      if (process.env.VERBOSE) console.log( `checking if ${DependenciesFile} exists or not.. .. ` );
       const dataBuffer = fs.readFileSync( DependenciesFile ); // the default-FLAGs are === {encoding: "utf-8", flag: "r"}
       const data = dataBuffer.toString();
       if (process.env.VERBOSE) console.log( __filename +" file contents of DependenciesFile: ["+ DependenciesFile +"]\n"+ data +"\n");
@@ -115,7 +116,7 @@ function processYAMLCmd( _CMD) {
         const retCode = EXECUTESHELLCMD.executionPiped ( __dirname, 'mvn', ['--version'], true, process.env.VERBOSE, false, null);
         if ( retCode != 0 ) {
           // if (process.env.VERBOSE) 
-          console.log("Unable to run MAVEN ('mvn' command)");
+          if (process.env.VERBOSE) console.log("Unable to run MAVEN ('mvn' command)");
           bIsMavenInstalled = false;
         }else{
           bIsMavenInstalled = true;
@@ -177,8 +178,9 @@ function processYAMLCmd( _CMD) {
               bJARFileExists = true;
             } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
               // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
-              // Just let program-pointer fall thru to code below (with bJARFileExists == false)
-              // do NOTHING.
+              // Just let program-pointer fall thru to code below (with bJARFileExists === false)
+              // do NOTHING inside this catch()
+              bJARFileExists = false; // re-inforce this value, which is default @ variable definition
             } // try-catch err15 for accessSync( LocalJARFilePath )
 
           } // try-catch err12 for accessSync( MVNJARFilePath )
@@ -200,21 +202,10 @@ function processYAMLCmd( _CMD) {
               console.error( "So.. Downloading from S3.  *** Not a secure way to do things ***"  );
               EXECUTESHELLCMD.sleep(5);
 
-                // try {
-                //   if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} already downloaded or not.. .. ` );
-                //   fs.accessSync( LocalJARFilePath ); // will throw.
-                //   // Ok. JAR file already exists in local file system
-                //   if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );  // ls -la "${LocalJARFilePath}"
-                //   CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
-                //   if (process.env.VERBOSE) console.log( __filename +": after adding LocalJARFile.. .. CLASSPATH = ["+ CLASSPATH +"]");
-                // } catch (err15) { // a.k.a. if fs.accessSync throws err15.code === 'ENOENT')
-                // }
-
                 // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
 
-                // If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
-                // So that we can tell whether a file was downloaded or not.. use "curl -f"
-                // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
+                // CMDLINE Tip: If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
+                // In order that we can tell whether a file was downloaded or not.. use "curl -f"
                 var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
 
                 if ( httpStatusCode != 200 ) {
@@ -256,7 +247,7 @@ function processYAMLCmd( _CMD) {
             if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} exists or not.. .. ` );
             fs.accessSync( LocalJARFilePath ); // will throw.
             // Ok. JAR file already exists locally on file-system
-            EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );
+            if (process.env.VERBOSE) EXECUTESHELLCMD.showFileAttributes ( LocalJARFilePath );
             CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
             if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
           } catch (err14) { // a.k.a. if  err14.code === 'ENOENT')
