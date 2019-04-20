@@ -206,7 +206,7 @@ function processYAMLCmd( _CMD) {
 
                 // CMDLINE Tip: If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
                 // In order that we can tell whether a file was downloaded or not.. use "curl -f"
-                var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
+                var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
 
                 if ( httpStatusCode != 200 ) {
                   console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
@@ -256,8 +256,8 @@ function processYAMLCmd( _CMD) {
             bAnyChanges2JARs = true; // well, something will be new once code below executes!
             console.error( `Hmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}\n` );
             console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
-            // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
-            var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, LocalJARFilePath); 
+            // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
+            var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
             if ( httpStatusCode != 200 ) {
               console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
               console.error( __filename + ": httpMessage = ["+ errMsg +"]");
