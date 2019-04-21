@@ -16,12 +16,14 @@ var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_p
 var EXECUTESHELLCMD = require( __dirname + "/../ExecShellCommand.js");
 var WEBACTIONCMD = require( __dirname + "/../WebActionCmd.js" );
 
+//==========================================================
 var CMDGRP="yaml"; // this entire file is about this CMDGRP
-var CMD="none";
+var COMMAND = "unknown"; // will be set based on what the user enters on the commandline.
+
 var CLASSPATH='';
 var CLASSPATHSEPARATOR= (process.platform == 'win32')? ';' : ':';
 
-//==========================
+//==========================================================
 /* attach options to a command */
 /* if a command does NOT define an action (see .action invocation), then the options are NOT validated */
 /* For Git-like submodule commands.. ..
@@ -64,22 +66,22 @@ CmdLine.on('option:verbose', function () {
 });
 
 CmdLine.on('command:read', function () {
-  CMD="read";
+  COMMAND="read";
   processYAMLCmd('read');
 });
 
 CmdLine.on('command:list', function () {
-  CMD="list";
+  COMMAND="list";
   processYAMLCmd('list');
 });
 
 CmdLine.on('command:replace', function () {
-  CMD="replace";
+  COMMAND="replace";
   processYAMLCmd('replace');
 });
 
 CmdLine.on('command:delete', function () {
-  CMD="delete";
+  COMMAND="delete";
   processYAMLCmd('delete');
 });
 
@@ -254,7 +256,7 @@ function processYAMLCmd( _CMD) {
 
             // So.. LocalJARFilePath does *** NOT *** exist in local file system
             bAnyChanges2JARs = true; // well, something will be new once code below executes!
-            console.error( `Hmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}\n` );
+            console.error( `\nHmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}` );
             console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
             // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
             var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
@@ -280,19 +282,23 @@ function processYAMLCmd( _CMD) {
 
       } // for lineObj of iterator
 
-    } catch (err13) { // a.k.a. if fs.readFileSync throws err13.code === 'ENOENT' || 'EISDIR')
+  } catch (err13) { // a.k.a. if fs.readFileSync throws err13.code === 'ENOENT' || 'EISDIR')
       console.error( __filename +"Internal error: failed to read DependenciesFile: ["+ DependenciesFile +"]\n"+ err13);
       process.exit(23);
   }; // try-catch of fs.readFileSync ( DependenciesFile .. )
 
 	//--------------------
-  // if (process.env.VERBOSE)
+  if ( bAnyChanges2JARs ) console.log('\n\n'); // well, "setup" output was observed by end-user.. so, put a couple of blank lines for readability.
   if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
+
   // ${CMDCLASS} is defined inside this properties file
   const props = require ( `${__dirname}/etc/js-source/${CMDGRP}.js-source` )
-  if ( bAnyChanges2JARs ) console.log('\n\n'); // well, "setup" output was observed by end-user.. so, put a couple of blank lines for readability.
 
 	//--------------------
+	// pre-scripts (Before running ./cmdline/asux.js)
+	EXECUTESHELLCMD.runPreScripts(); // ignore any exit code from these PRE-scripts
+
+  //--------------------
 	// In Unix shell, If there are spaces inside the variables, then "$@" retains the spaces, while "$*" does not
 	// The following lines of code are the JS-quivalent of shell's      ./cmdline/asux $@
   // Get rid of 'node' '--verbose'(optionally) and 'asux.js'.. .. and finally the 'yaml/asux' command
@@ -304,26 +310,38 @@ function processYAMLCmd( _CMD) {
 
 
 	if (process.env.VERBOSE) { console.log( `${__filename} : started off with node ` + process.argv.join(' ') ); }
-  var cmdArgs = process.argv.slice( ( process.argv[0].match('.*node(.exe)?$') )? 2: 1 ); // get rid of BOTH 'node' and 'asux.js'
-  if ( cmdArgs[0] == '--verbose' ) cmdArgs = cmdArgs.slice( 1 ); // get rid of --verbose - for now.  We'll insert it back in the right place.
-  // Now, JSON's Commander-library only allows 'read' as a command.
-  // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'
-  cmdArgs[0] = '--' + cmdArgs[0]; // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
-	cmdArgs.splice(0,0, '-cp' ); // insert ./asux.js as the 1st cmdline parameter
-	cmdArgs.splice(1,0, CLASSPATH ); // insert CLASSPATH as the 2nd cmdline parameter
-	cmdArgs.splice(2,0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as the 3rd cmdline parameter
-  if (process.env.VERBOSE) cmdArgs.splice( 3, 0, '--verbose' ); // optionally, insert '--verbose' as the 4th cmdline parameter (going to my Cmd.java)
-  // if (process.env.VERBOSE) 
+  var cmdArgs = process.argv.slice( ( process.argv[0].match('.*node(.exe)?$') )? 2: 1 ); // get rid of BOTH 'node' and 'asux.js' (or.. just asux.sh)
+
+	var cmdArgs = [];
+	for (var ix in process.argv) {
+    if ( process.argv[ix].match('.*node(.exe)?$') ) continue; // get rid of node.js  or  node.exe (on windows)
+		if ( ix < 2 ) continue; // For starters, Get rid of 'node' and 'asux.js'
+		if ( process.argv[ix] == COMMAND ) continue; // we'll re-insert the COMMAND again later below.  Appropriately.
+		cmdArgs.push( process.argv[ix]);
+	}
+
+
+  // Now, JSON's Commander-library only allows 'read' 'list' 'delete' as a command.
+  // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'  '--list' '--delete'
+	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as the 1st cmdline parameter
+	cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as the 2nd cmdline parameter
+	cmdArgs.splice( 2, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as the 3rd cmdline parameter
+  cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
   const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
+  process.exitCode = retCode;
+
   if ( retCode == 0 ) {
     if (process.env.VERBOSE) console.log( "\n"+ __filename +": Done!");
-    process.exitCode = 0;
+    // process.exitCode = 0;
   }else{
-    console.error( __filename +": Failed with error-code "+ retCode +" for: "+ props['CMDCLASS'] +" "+ cmdArgs.join(' '));
-    process.exit(retCode);
+    console.error( '\n'+ __filename +": Failed with error-code "+ retCode +" for: java "+ cmdArgs.join(' '));
+    // process.exit(retCode);
   }
+
+	//--------------------
+	EXECUTESHELLCMD.runPostScripts(); // ignore any exit code from these Post-scripts
 
 } // end function processYAMLCmd
 
