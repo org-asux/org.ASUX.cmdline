@@ -41,6 +41,7 @@ CmdLine
 .command('read ...', 'read/query/ content from YAML files', { isDefault: false, noHelp: true } )
 .command('list ...', 'list RHS-content from YAML files', { isDefault: false, noHelp: true } )
 .command('delete ...', 'delete content from YAML files', { isDefault: false, noHelp: true } )
+.command('macro ...', 'macro process YAML file based on propertiesFile', { isDefault: false, noHelp: true } )
 .command('replace ...', 'replace content from YAML files', { isDefault: false, noHelp: true } )
 	;
 
@@ -67,22 +68,27 @@ CmdLine.on('option:verbose', function () {
 
 CmdLine.on('command:read', function () {
   COMMAND="read";
-  processYAMLCmd('read');
+  processYAMLCmd(COMMAND);
 });
 
 CmdLine.on('command:list', function () {
   COMMAND="list";
-  processYAMLCmd('list');
-});
-
-CmdLine.on('command:replace', function () {
-  COMMAND="replace";
-  processYAMLCmd('replace');
+  processYAMLCmd(COMMAND);
 });
 
 CmdLine.on('command:delete', function () {
   COMMAND="delete";
-  processYAMLCmd('delete');
+  processYAMLCmd(COMMAND);
+});
+
+CmdLine.on('command:macro', function () {
+  COMMAND="macro";
+  processYAMLCmd(COMMAND);
+});
+
+CmdLine.on('command:replace', function () {
+  COMMAND="replace";
+  processYAMLCmd(COMMAND);
 });
 
 // Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
@@ -316,6 +322,7 @@ function processYAMLCmd( _CMD) {
 	for (var ix in process.argv) {
     if ( process.argv[ix].match('.*node(.exe)?$') ) continue; // get rid of node.js  or  node.exe (on windows)
 		if ( ix < 2 ) continue; // For starters, Get rid of 'node' and 'asux.js'
+    if ( process.argv[ix].match('--verbose') ) continue; // get rid of node.js  or  node.exe (on windows)
 		if ( process.argv[ix] == COMMAND ) continue; // we'll re-insert the COMMAND again later below.  Appropriately.
 		cmdArgs.push( process.argv[ix]);
 	}
@@ -323,10 +330,15 @@ function processYAMLCmd( _CMD) {
 
   // Now, JSON's Commander-library only allows 'read' 'list' 'delete' as a command.
   // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'  '--list' '--delete'
-	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as the 1st cmdline parameter
-	cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as the 2nd cmdline parameter
-	cmdArgs.splice( 2, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as the 3rd cmdline parameter
-  cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as JAVA's 1st cmdline parameter
+	cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as JAVA's  2nd cmdline parameter
+	cmdArgs.splice( 2, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
+	if (process.env.VERBOSE) {
+    cmdArgs.splice( 3, 0, '--verbose' ); // insert --verbose as JAVA's  4th cmdline parameter
+    cmdArgs.splice( 4, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+  } else {
+    cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+  }
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
   const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
