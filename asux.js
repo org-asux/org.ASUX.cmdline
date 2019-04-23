@@ -17,6 +17,8 @@ var EXECUTESHELLCMD = require( __dirname + "/../ExecShellCommand.js");
 var WEBACTIONCMD = require( __dirname + "/../WebActionCmd.js" );
 
 //==========================================================
+var PARENTPROJFLDR = process.env.PARENTPROJFLDR ? process.env.PARENTPROJFLDR : "/invalid/path/to/parentProject/org.ASUX";
+
 var CMDGRP="yaml"; // this entire file is about this CMDGRP
 var COMMAND = "unknown"; // will be set based on what the user enters on the commandline.
 
@@ -41,8 +43,9 @@ CmdLine
 .command('read ...', 'read/query/ content from YAML files', { isDefault: false, noHelp: true } )
 .command('list ...', 'list RHS-content from YAML files', { isDefault: false, noHelp: true } )
 .command('delete ...', 'delete content from YAML files', { isDefault: false, noHelp: true } )
-.command('macro ...', 'macro process YAML file based on propertiesFile', { isDefault: false, noHelp: true } )
 .command('replace ...', 'replace content from YAML files', { isDefault: false, noHelp: true } )
+.command('macro ...', 'macro process YAML file based on propertiesFile', { isDefault: false, noHelp: true } )
+.command('batch ...', 'run multiple commands in sequence, with output of one feeding into the next', { isDefault: false, noHelp: true } )
 	;
 
 //==========================
@@ -83,6 +86,11 @@ CmdLine.on('command:delete', function () {
 
 CmdLine.on('command:macro', function () {
   COMMAND="macro";
+  processYAMLCmd(COMMAND);
+});
+
+CmdLine.on('command:batch', function () {
+  COMMAND="batch";
   processYAMLCmd(COMMAND);
 });
 
@@ -153,7 +161,9 @@ function processYAMLCmd( _CMD) {
         const MVNfolderpath=MAVENLOCALREPO +'/'+ folderpath +'/'+ artifactId +'/'+ version;
         const JARFileName = artifactId +'-'+ version +".jar";
         const MVNJARFilePath=MVNfolderpath +'/'+ JARFileName;
-        const LocalJARFilePath=`/tmp/dist/${JARFileName}`;
+        // const JARFOLDER=__dirname+'/../lib';
+        const JARFOLDER=PARENTPROJFLDR+'/lib';
+        const LocalJARFilePath=`${JARFOLDER}/${groupId}.${artifactId}.${JARFileName}`;
         const S3FileName=`${groupId}.${artifactId}.${artifactId}-${version}.jar`;
         const URL1 = `https://s3.amazonaws.com/org.asux.cmdline/${S3FileName}`;
 
@@ -206,43 +216,46 @@ function processYAMLCmd( _CMD) {
               CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
               console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
             }else{
-              console.error( `MAVEN could NOT download project ${groupId}.${artifactId}:${version} from MAVEN-CENTRAL`);
-              console.error( "So.. Downloading from S3.  *** Not a secure way to do things ***"  );
-              EXECUTESHELLCMD.sleep(5);
+              console.error( `MAVEN could NOT download project ${groupId}.${artifactId}:${version} from MAVEN-CENTRAL\n`);
+              console.error( __filename +`: Internal Fatal error. Unable to find ${MVNJARFilePath} or ${LocalJARFilePath}.\n` );
+              process.exit(28);
 
+              { // empty block of COMMENTS only.
+                // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${PARENTPROJFLDR}/lib
+                // console.error( "So.. Downloading from S3.  *** Not a secure way to do things ***"  );
+                // EXECUTESHELLCMD.sleep(5);
                 // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
 
                 // CMDLINE Tip: If the URL does NOT point to an ACTUAL file in S3, /usr/bin/curl will still get a RESPONSE from S3.
                 // In order that we can tell whether a file was downloaded or not.. use "curl -f"
-                var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
-
-                if ( httpStatusCode != 200 ) {
-                  console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
-                  console.error( __filename + ": httpMessage = ["+ errMsg +"]");
-                  process.exit(27);
-                } else { // if-else httpStatusCode returned 200
-                  // Either the above get URL command returned a NON-zero error code, or an empty file
-                  const fstats = fs.statSync(LocalJARFilePath);
-                  if ( fstats.size <= 0 ) { // file is zero bytes!!!
-                    console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
-                    process.exit(28);
-                  }
-                  // all ok with LocalJARFilePath
-                  const cmdArgs = ['-q', `install:install-file -Dfile=${LocalJARFilePath}`, `-DgroupId=${groupId}`, `-DartifactId=${artifactId}`, `-Dversion=${version}`, '-Dpackaging=jar', '-DgeneratePom=true' ];
-                  // if (process.env.VERBOSE) 
-                  console.log( `${__filename} : in /tmp running 'mvn' with cmdline-arguments:` + cmdArgs.join(' ') );
-                  const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
-                  if ( retCode == 0 ) {
-                    CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
-                    console.log( __filename +": mvn-install succeeded, so using CLASSPATH = ["+ CLASSPATH +"]");
-                  }else{
-                    CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
-                    console.log( __filename +": MVN install FAILED!!!!!!  So.. using LocalJARFile CLASSPATH = ["+ CLASSPATH +"]");
-                    // console.error( __filename +`Internal Fatal error. Unable to install ${MVNJARFilePath} to ${MAVENLOCALREPO}.` );
-                    // process.exit(28);
-                  }
-
-                } // if-else httpStatusCode
+                // var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
+                // if ( httpStatusCode != 200 ) {
+                //   console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
+                //   console.error( __filename + ": httpMessage = ["+ errMsg +"]");
+                //   process.exit(27);
+                // } else { // if-else httpStatusCode returned 200
+                //   // Either the above get URL command returned a NON-zero error code, or an empty file
+                //   const fstats = fs.statSync(LocalJARFilePath);
+                //   if ( fstats.size <= 0 ) { // file is zero bytes!!!
+                //     console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
+                //     process.exit(28);
+                //   }
+                //   // all ok with LocalJARFilePath
+                //   const cmdArgs = ['-q', `install:install-file -Dfile=${LocalJARFilePath}`, `-DgroupId=${groupId}`, `-DartifactId=${artifactId}`, `-Dversion=${version}`, '-Dpackaging=jar', '-DgeneratePom=true' ];
+                //   // if (process.env.VERBOSE) 
+                //   console.log( `${__filename} : in /tmp running 'mvn' with cmdline-arguments:` + cmdArgs.join(' ') );
+                //   const retCode = EXECUTESHELLCMD.executionPiped ( "/tmp", 'mvn', cmdArgs, true, process.env.VERBOSE, false, null);
+                //   if ( retCode == 0 ) {
+                //     CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${MVNJARFilePath}`;
+                //     console.log( __filename +": mvn-install succeeded, so using CLASSPATH = ["+ CLASSPATH +"]");
+                //   }else{
+                //     CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
+                //     console.log( __filename +": MVN install FAILED!!!!!!  So.. using LocalJARFile CLASSPATH = ["+ CLASSPATH +"]");
+                //     // console.error( __filename +`Internal Fatal error. Unable to install ${MVNJARFilePath} to ${MAVENLOCALREPO}.` );
+                //     // process.exit(28);
+                //    }
+                // } // if-else httpStatusCode
+              }
 
             } // if-else retCode
           } // if ! bJARFileExists
@@ -250,7 +263,7 @@ function processYAMLCmd( _CMD) {
         } else { // if bIsMavenInstalled
 
           // ______________________
-          // Let's see if the project is already in LOCAL-filesystem inside /tmp/dist folder
+          // Let's see if the project is already in LOCAL-filesystem inside /lib folder of parent GIT Project
           try {
             if (process.env.VERBOSE) console.log( `checking if ${LocalJARFilePath} exists or not.. .. ` );
             fs.accessSync( LocalJARFilePath ); // will throw.
@@ -262,25 +275,30 @@ function processYAMLCmd( _CMD) {
 
             // So.. LocalJARFilePath does *** NOT *** exist in local file system
             bAnyChanges2JARs = true; // well, something will be new once code below executes!
-            console.error( `\nHmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}` );
-            console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
-            // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
-            var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
-            if ( httpStatusCode != 200 ) {
-              console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
-              console.error( __filename + ": httpMessage = ["+ errMsg +"]");
-              process.exit(29);
-            } else { // if-else httpStatusCode returned 200
-                // Either the above get URL command returned a NON-zero error code, or an empty file
-                const fstats = fs.statSync(LocalJARFilePath);
-                if ( fstats.size <= 0 ) { // file is zero bytes!!!
-                  console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
-                  process.exit(28);
-                }
-                // all ok with LocalJARFilePath
-                CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
-                if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
-              } // if-else httpStatusCode
+            console.error( `\nHmmm. ${LocalJARFilePath} does Not exist.\n${err14.message}\n` );
+            console.error( __filename +`: Internal Fatal error. Unable to find ${LocalJARFilePath} (No mvn).\n` );
+            process.exit(29);
+              { // empty block of COMMENTS only.
+              // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${PARENTPROJFLDR}/lib
+              // console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
+              // // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
+              // var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
+              // if ( httpStatusCode != 200 ) {
+              //   console.error( __filename + ": Serious internal failure: Failure to download from ["+ URL1 +"] httoCode="+ httpStatusCode +"]");
+              //   console.error( __filename + ": httpMessage = ["+ errMsg +"]");
+              //   process.exit(29);
+              // } else { // if-else httpStatusCode returned 200
+              //     // Either the above get URL command returned a NON-zero error code, or an empty file
+              //     const fstats = fs.statSync(LocalJARFilePath);
+              //     if ( fstats.size <= 0 ) { // file is zero bytes!!!
+              //       console.error( __filename + ": Serious internal failure: zero-byte download ["+ LocalJARFilePath +"] from: "+ URL1 );
+              //       process.exit(28);
+              //     }
+              //     // all ok with LocalJARFilePath
+              //     CLASSPATH=`${CLASSPATH}${CLASSPATHSEPARATOR}${LocalJARFilePath}`;
+              //     if (process.env.VERBOSE) console.log( __filename +": CLASSPATH = ["+ CLASSPATH +"]");
+              // } // if-else httpStatusCode
+            }
 
           } // try-catch err14 for accessSync( LocalJARFilePath )
 
