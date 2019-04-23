@@ -12,7 +12,9 @@ var os = require('os');     // https://nodejs.org/api/os.html
 var PATH = require('path'); // to help process the script-file details.
 var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_path_mode 
 
+//--------------------------
 var PARENTPROJFLDR = process.env.PARENTPROJFLDR ? process.env.PARENTPROJFLDR : "/invalid/path/to/parentProject/org.ASUX";
+var INITIAL_CWD = process.cwd(); // just in case I mistakenly process.chdir() somewhere below.
 
 // This is the Node.JS script within the same directory - to make it simple to run an external command
 var EXECUTESHELLCMD = require( PARENTPROJFLDR + "/ExecShellCommand.js");
@@ -20,6 +22,8 @@ var EXECUTESHELLCMD = require( PARENTPROJFLDR + "/ExecShellCommand.js");
 // Oh! I never liked using WebActionCmd.js .. ONLY because it relies on sync-request, which pops up firewall alerts on BOTH MacOS and Windows 10
 
 //==========================================================
+var INITIAL_CWD = process.cwd(); // just in case I mistakenly process.chdir() somewhere below.
+
 var CMDGRP="yaml"; // this entire file is about this CMDGRP
 var COMMAND = "unknown"; // will be set based on what the user enters on the commandline.
 
@@ -360,7 +364,7 @@ function processYAMLCmd( _CMD) {
   }
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
-  const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( "/tmp", 'java', cmdArgs, true, process.env.VERBOSE, false, null);
+  const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( INITIAL_CWD, 'java', cmdArgs, true, process.env.VERBOSE, false, null);
   process.exitCode = retCode;
 
   if ( retCode == 0 ) {
