@@ -7,6 +7,21 @@
 junit:junit:jar:4.8.2
 commons-cli:commons-cli:jar:1.4
 com.esotericsoftware.yamlbeans:yamlbeans:jar:1.13
+com.opencsv:opencsv:jar:4.0
+
+com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
+com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0
+com.fasterxml.jackson.core:jackson-core:jar:2.9.8
+
 org.ASUX:yaml:jar:1.0
+
+### +- com.opencsv:opencsv:jar:4.0:compile
+### |  +- org.apache.commons:commons-lang3:jar:3.6:compile
+### |  +- org.apache.commons:commons-text:jar:1.1:compile
+### |  \- commons-beanutils:commons-beanutils:jar:1.9.3:compile
+### |     +- commons-logging:commons-logging:jar:1.2:compile
+### |     \- commons-collections:commons-collections:jar:3.2.2:compile
+
+### com.google.code.gson:gson:jar:2.8.5
 
 #EoF
