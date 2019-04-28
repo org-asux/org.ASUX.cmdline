@@ -15,12 +15,12 @@ com.fasterxml.jackson.core:jackson-core:jar:2.9.8
 
 org.ASUX:yaml:jar:1.0
 
-### +- com.opencsv:opencsv:jar:4.0:compile
-### |  +- org.apache.commons:commons-lang3:jar:3.6:compile
-### |  +- org.apache.commons:commons-text:jar:1.1:compile
-### |  \- commons-beanutils:commons-beanutils:jar:1.9.3:compile
-### |     +- commons-logging:commons-logging:jar:1.2:compile
-### |     \- commons-collections:commons-collections:jar:3.2.2:compile
+com.opencsv:opencsv:jar:4.0:compile
+org.apache.commons:commons-lang3:jar:3.6
+org.apache.commons:commons-text:jar:1.1
+commons-beanutils:commons-beanutils:jar:1.9.3
+commons-logging:commons-logging:jar:1.2
+commons-collections:commons-collections:jar:3.2.2
 
 ### com.google.code.gson:gson:jar:2.8.5
 
