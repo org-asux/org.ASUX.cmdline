@@ -7,11 +7,11 @@
 junit:junit:jar:4.8.2
 commons-cli:commons-cli:jar:1.4
 com.esotericsoftware.yamlbeans:yamlbeans:jar:1.13
-com.opencsv:opencsv:jar:4.0
 
 com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
-com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0
+com.fasterxml.jackson.core:jackson-annotations:jar:2.9.6
 com.fasterxml.jackson.core:jackson-core:jar:2.9.8
+com.fasterxml.jackson.core:jackson-core:jar:2.9.6:compile
 
 org.ASUX:yaml:jar:1.0
 
@@ -22,6 +22,18 @@ commons-beanutils:commons-beanutils:jar:1.9.3
 commons-logging:commons-logging:jar:1.2
 commons-collections:commons-collections:jar:3.2.2
 
-### com.google.code.gson:gson:jar:2.8.5
+### com.google.code.gson:gson:jar:2.8.5 ## I was looking to use this instead of Jackson, but many issues to list.
+
+
+com.amazonaws:aws-java-sdk-core:jar:1.11.541:compile
+org.apache.httpcomponents:httpclient:jar:4.5.5:compile
+org.apache.httpcomponents:httpcore:jar:4.4.10:compile
+commons-codec:commons-codec:jar:1.10:compile
+software.amazon.ion:ion-java:jar:1.2.0:compile
+com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.9.6:compile
+joda-time:joda-time:jar:2.8.1:compile
+com.amazonaws:aws-java-sdk-ec2:jar:1.11.541:compile
+com.amazonaws:jmespath-java:jar:1.11.541:compile
+
 
 #EoF
