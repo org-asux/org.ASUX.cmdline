@@ -89,6 +89,11 @@ CmdLine.on('command:delete', function () {
   processYAMLCmd(COMMAND);
 });
 
+CmdLine.on('command:insert', function () {
+  COMMAND="insert";
+  processYAMLCmd(COMMAND);
+});
+
 CmdLine.on('command:macro', function () {
   COMMAND="macro";
   processYAMLCmd(COMMAND);
