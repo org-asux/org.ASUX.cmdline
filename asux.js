@@ -84,6 +84,11 @@ CmdLine.on('command:list', function () {
   processYAMLCmd(COMMAND);
 });
 
+CmdLine.on('command:table', function () {
+  COMMAND="table";
+  processYAMLCmd(COMMAND);
+});
+
 CmdLine.on('command:delete', function () {
   COMMAND="delete";
   processYAMLCmd(COMMAND);
