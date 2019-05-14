@@ -4,6 +4,9 @@
 ## To help others, copy these 5 header lines!   Add a few blank lines to make everyone feel comfortable editing this file!
 ## That's it!
 
+org.ASUX:yaml:jar:1.0
+org.ASUX:common:jar:1.0
+
 junit:junit:jar:4.8.2
 commons-cli:commons-cli:jar:1.4
 com.esotericsoftware.yamlbeans:yamlbeans:jar:1.13
@@ -12,8 +15,6 @@ com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
 com.fasterxml.jackson.core:jackson-annotations:jar:2.9.6
 com.fasterxml.jackson.core:jackson-core:jar:2.9.8
 com.fasterxml.jackson.core:jackson-core:jar:2.9.6:compile
-
-org.ASUX:yaml:jar:1.0
 
 com.opencsv:opencsv:jar:4.0:compile
 org.apache.commons:commons-lang3:jar:3.6
