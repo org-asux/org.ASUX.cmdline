@@ -4,12 +4,14 @@
 ## To help others, copy these 5 header lines!   Add a few blank lines to make everyone feel comfortable editing this file!
 ## That's it!
 
-org.ASUX:yaml:jar:1.0
-org.ASUX:common:jar:1.0
+org.asux:common:jar:1.0
+org.asux:yaml:jar:1.0
+org.asux:yaml.collectionsimpl:jar:1.0
 
 junit:junit:jar:4.8.2
 commons-cli:commons-cli:jar:1.4
 com.esotericsoftware.yamlbeans:yamlbeans:jar:1.13
+org.yaml:snakeyaml:jar:1.24
 
 com.fasterxml.jackson.core:jackson-databind:jar:2.9.8
 com.fasterxml.jackson.core:jackson-annotations:jar:2.9.6
