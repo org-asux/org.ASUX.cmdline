@@ -356,8 +356,11 @@ function processYAMLCmd( _CMD) {
     if ( process.argv[ix].match('.*node(.exe)?$') ) continue; // get rid of node.js  or  node.exe (on windows)
 		if ( ix < 2 ) continue; // For starters, Get rid of 'node' and 'asux.js'
     if ( process.argv[ix].match('--verbose') ) continue; // get rid of node.js  or  node.exe (on windows)
-		if ( process.argv[ix] == COMMAND ) continue; // we'll re-insert the COMMAND again later below.  Appropriately.
-		cmdArgs.push( process.argv[ix]);
+    if ( process.argv[ix] == COMMAND ) { // re-insert the COMMAND again - Appropriately, as Java's Apache CLI requires a -- prefixing the command
+        cmdArgs.push( '--'+process.argv[ix]);
+    } else {
+        cmdArgs.push( process.argv[ix]);
+    }
 	}
 
 
@@ -368,9 +371,9 @@ function processYAMLCmd( _CMD) {
 	cmdArgs.splice( 2, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
 	if (process.env.VERBOSE) {
     cmdArgs.splice( 3, 0, '--verbose' ); // insert --verbose as JAVA's  4th cmdline parameter
-    cmdArgs.splice( 4, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+    // cmdArgs.splice( 4, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
   } else {
-    cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+    // cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
   }
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
@@ -381,7 +384,7 @@ function processYAMLCmd( _CMD) {
     if (process.env.VERBOSE) console.log( "\n"+ __filename +": Done!");
     // process.exitCode = 0;
   }else{
-    console.error( '\n'+ __filename +": Failed with error-code "+ retCode +" for: java "+ cmdArgs.join(' '));
+    if (process.env.VERBOSE) console.error( '\n'+ __filename +": Failed with error-code "+ retCode +" for: java "+ cmdArgs.join(' '));
     // process.exit(retCode);
   }
 
