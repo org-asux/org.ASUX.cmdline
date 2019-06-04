@@ -7,6 +7,8 @@
 org.asux:common:jar:1.0
 org.asux:yaml:jar:1.0
 org.asux:yaml.collectionsimpl:jar:1.0
+org.asux:yaml.nodeimpl:jar:1.0
+org.asux:aws-sdk:jar:1.0
 
 junit:junit:jar:4.8.2
 commons-cli:commons-cli:jar:1.4
