@@ -8,7 +8,7 @@ RUNTIMEFLDR="$(dirname "$CMD")"
 # echo "RUNTIMEFLDR = ${RUNTIMEFLDR}"
 
 ##------------------------------
-if [ "$SystemRoot" = "C:\\WINDOWS" ]; then
+if [ "$SystemRoot" == "C:\\WINDOWS" ]; then
         echo "Detected Windows O/S"
         echo \
         "${RUNTIMEFLDR}/asux_forWindows" $@
