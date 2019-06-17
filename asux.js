@@ -13,12 +13,12 @@ var PATH = require('path'); // to help process the script-file details.
 var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_path_mode 
 
 //--------------------------
-var PARENTPROJFLDR = process.env.PARENTPROJFLDR ? process.env.PARENTPROJFLDR : "/invalid/path/to/parentProject/org.ASUX";
+var ORGASUXHOME = process.env.ORGASUXHOME ? process.env.ORGASUXHOME : "/invalid/path/to/parentProject/org.ASUX";
 var INITIAL_CWD = process.cwd(); // just in case I mistakenly process.chdir() somewhere below.
 
 // This is the Node.JS script within the same directory - to make it simple to run an external command
-var EXECUTESHELLCMD = require( PARENTPROJFLDR + "/ExecShellCommand.js");
-// var WEBACTIONCMD = require( PARENTPROJFLDR + "/WebActionCmd.js" );
+var EXECUTESHELLCMD = require( ORGASUXHOME + "/ExecShellCommand.js");
+// var WEBACTIONCMD = require( ORGASUXHOME + "/WebActionCmd.js" );
 // Oh! I never liked using WebActionCmd.js .. ONLY because it relies on sync-request, which pops up firewall alerts on BOTH MacOS and Windows 10
 
 //==========================================================
@@ -177,7 +177,7 @@ function processYAMLCmd( _CMD) {
         const JARFileName = artifactId +'-'+ version +".jar";
         const MVNJARFilePath=MVNfolderpath +'/'+ JARFileName;
         // const JARFOLDER=__dirname+'/../lib';
-        const JARFOLDER=PARENTPROJFLDR+'/lib';
+        const JARFOLDER=ORGASUXHOME+'/lib';
         const LocalJARFilePath=`${JARFOLDER}/${groupId}.${artifactId}.${JARFileName}`;
         const S3FileName=`${groupId}.${artifactId}.${artifactId}-${version}.jar`;
         const URL1 = `https://s3.amazonaws.com/org.asux.cmdline/${S3FileName}`;
@@ -236,7 +236,7 @@ function processYAMLCmd( _CMD) {
               process.exit(28);
 
               { // empty block of COMMENTS only.
-                // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${PARENTPROJFLDR}/lib
+                // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${ORGASUXHOME}/lib
                 // console.error( "So.. Downloading from S3.  *** Not a secure way to do things ***"  );
                 // EXECUTESHELLCMD.sleep(5);
                 // if we're here, JAR is NEITHER in ~/.m2/repository - NOR in /tmpdist
@@ -294,7 +294,7 @@ function processYAMLCmd( _CMD) {
             console.error( __filename +`: Internal Fatal error. Unable to find ${LocalJARFilePath} (No mvn).\n` );
             process.exit(29);
               { // empty block of COMMENTS only.
-              // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${PARENTPROJFLDR}/lib
+              // OLD CODE - I used to get the JARs from AWS via https.  No longer.  JARs are now in ${ORGASUXHOME}/lib
               // console.error( "Without Maven.. Downloading from S3.  *** Not a secure way to do things ***"  );
               // // var [ bSuccess, httpStatusCode, httpmsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
               // var [ httpStatusCode, errMsg ] = WEBACTIONCMD.getURLAsFileSynchronous( URL1, null, LocalJARFilePath); 
@@ -367,13 +367,14 @@ function processYAMLCmd( _CMD) {
   // Now, JSON's Commander-library only allows 'read' 'list' 'delete' as a command.
   // But, Java Apache commons-cli REQUIRES double-hyphened command '--read'  '--list' '--delete'
 	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as JAVA's 1st cmdline parameter
-	cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as JAVA's  2nd cmdline parameter
-	cmdArgs.splice( 2, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
+  cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as JAVA's  2nd cmdline parameter
+  cmdArgs.splice( 2, 0, "-DORGASUXHOME="+ORGASUXHOME );
+	cmdArgs.splice( 3, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
 	if (process.env.VERBOSE) {
-    cmdArgs.splice( 3, 0, '--verbose' ); // insert --verbose as JAVA's  4th cmdline parameter
-    // cmdArgs.splice( 4, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+    cmdArgs.splice( 4, 0, '--verbose' ); // insert --verbose as JAVA's  4th cmdline parameter
+    // cmdArgs.splice( 5, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
   } else {
-    // cmdArgs.splice( 3, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
+    // cmdArgs.splice( 4, 0,  '--' + COMMAND ); // convert 'read' into '--read', 'delete' into '--delete' as Javacode still sees commands as having -- as prefix
   }
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
