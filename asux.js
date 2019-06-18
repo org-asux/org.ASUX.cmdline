@@ -130,7 +130,8 @@ function processYAMLCmd( _CMD) {
 	EXECUTESHELLCMD.runPreScripts(); // ignore any exit code from these PRE-scripts
 
   //--------------------
-  var cmdArgs = copyCmdLineArgs( _CMD );
+  var cmdArgs = copyCmdLineArgs( _CMD, /* _bInsertDoubleHyphen */ true, /* _bAddCmd2Params */ true );
+  // copyCmdLineArgs() is defined within ORGASUXHOME/asux-common.js
 
 	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as JAVA's 1st cmdline parameter
   cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as JAVA's  2nd cmdline parameter
@@ -138,7 +139,7 @@ function processYAMLCmd( _CMD) {
 	cmdArgs.splice( 3, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
   if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
 
-  const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( INITIAL_CWD, 'java', cmdArgs, true, process.env.VERBOSE, false, null);
+  const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( INITIAL_CWD, 'java', cmdArgs, true, process.env.VERBOSE, false, null );
   process.exitCode = retCode;
 
   if ( retCode == 0 ) {
