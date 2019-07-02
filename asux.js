@@ -87,8 +87,8 @@ CmdLine.on('command:insert', function () {
   processYAMLCmd(COMMAND);
 });
 
-CmdLine.on('command:macro', function () {
-  COMMAND="macro";
+CmdLine.on('command:macroyaml', function () {
+  COMMAND="macroyaml";
   processYAMLCmd(COMMAND);
 });
 
