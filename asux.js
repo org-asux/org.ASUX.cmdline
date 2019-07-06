@@ -12,7 +12,7 @@ var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_p
 
 var ORGASUXHOME = process.env.ORGASUXHOME ? process.env.ORGASUXHOME : "/invalid/path/to/parentProject/org.ASUX";
 // file-included - Not a 'require'
-eval( fs.readFileSync( ORGASUXHOME+'/asux-common.js' ) + '' );
+eval( fs.readFileSync( ORGASUXHOME+'/bin/asux-common.js' ) + '' );
 
 //==========================================================
 var CMDGRP="yaml"; // this entire file is about this CMDGRP
