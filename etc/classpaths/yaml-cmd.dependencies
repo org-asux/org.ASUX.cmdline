@@ -17,7 +17,7 @@ org.yaml:snakeyaml:jar:1.24
 
 com.fasterxml.jackson.core:jackson-databind:jar:2.9.9
 com.fasterxml.jackson.core:jackson-annotations:jar:2.9.6
-com.fasterxml.jackson.core:jackson-core:jar:2.9.8
+com.fasterxml.jackson.core:jackson-core:jar:2.9.9
 
 com.opencsv:opencsv:jar:4.0
 org.apache.commons:commons-lang3:jar:3.6
