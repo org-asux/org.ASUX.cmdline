@@ -33,11 +33,13 @@ CmdLine
 	.version('1.0', '-v, --version')
 	.usage('[options] <commands ...>')
 	.option('--verbose', 'A value that can be increased by repeating', 0)
+	.option('--offline', 'whether to assume No internet and use cached responses (previously saved)', 0)
 .command('read ...', 'read/query/ content from YAML files', { isDefault: false, noHelp: true } )
 .command('list ...', 'list RHS-content from YAML files', { isDefault: false, noHelp: true } )
 .command('delete ...', 'delete content from YAML files', { isDefault: false, noHelp: true } )
 .command('replace ...', 'replace content from YAML files', { isDefault: false, noHelp: true } )
 .command('macro ...', 'macro process YAML file based on propertiesFile', { isDefault: false, noHelp: true } )
+.command('table ...', 'extract a tabular output from an input-YAML file', { isDefault: false, noHelp: true } )
 .command('batch ...', 'run multiple commands in sequence, with output of one feeding into the next', { isDefault: false, noHelp: true } )
 	;
 
@@ -60,6 +62,11 @@ CmdLine.on('--help', function(){
 CmdLine.on('option:verbose', function () {
 	console.log("Yeah.  Going verbose" + this.verbose);
   process.env.VERBOSE = this.verbose;
+});
+
+CmdLine.on('option:offline', function () {
+	console.log("Yeah.  Going _OFFLINE_ " );
+	process.env.OFFLINE = true;
 });
 
 CmdLine.on('command:read', function () {
