@@ -15,7 +15,7 @@ var ORGASUXHOME = process.env.ORGASUXHOME ? process.env.ORGASUXHOME : "/invalid/
 eval( fs.readFileSync( ORGASUXHOME+'/bin/asux-common.js' ) + '' );
 
 //==========================================================
-var CMDGRP="yaml";  // this entire file is about this CMDGRP.   !!! This value is needed within processJavaCmd() - that function is defined within ${ORGASUXFLDR}/bin/asux-common.js
+var CMDGRP="yaml";  // this entire file is about this CMDGRP.   !!! This value is needed within processYamlCmd()/processJavaCmd() - that function is defined within ${ORGASUXFLDR}/bin/asux-common.js
 var COMMAND = "unknown"; // will be set based on what the user enters on the commandline.
 
 //==========================================================
@@ -71,44 +71,44 @@ CmdLine.on('option:offline', function () {
 
 CmdLine.on('command:read', function () {
   COMMAND="read";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:list', function () {
   COMMAND="list";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:table', function () {
   COMMAND="table";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:delete', function () {
   COMMAND="delete";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:insert', function () {
   COMMAND="insert";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:macroyaml', function () {
   COMMAND="macroyaml";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:batch', function () {
   COMMAND="batch";
 	// console.error( __filename +':\nProcessing ARGS command-line: ', CmdLine.args.join(' ') );
 	// console.error( 'Processing FULL command-line: ', process.argv.join(' ') );
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 CmdLine.on('command:replace', function () {
   COMMAND="replace";
-  processJavaCmd(COMMAND);
+  processYamlCmd(COMMAND);
 });
 
 // Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
@@ -121,6 +121,65 @@ CmdLine.on('command:*', function () {
 
 //==========================
 CmdLine.parse(process.argv);
+
+//============================================================
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+//============================================================
+
+function processYamlCmd( _CMD) {
+
+    // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!
+    // yaml batch is the _TOPMOST_ useful capability of the org.ASUX project, as of 2019.
+    // So, the ability to invoke code in org.ASUX.AWS.CFN and org.ASUX.AWS-SDK .. within a yaml-batch file .. is NOT-Negotiably important (no arguments: It is a must have capability).
+    // So.. by implications, we need to set process.env.AWSHOME and process.env.AWSCFNHOME in here!!
+    // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!
+
+    // whether or not process.env.AWSHOME is already set already.. reset it based on the location of this file (./asux.js)
+    const afolder=ORGASUXHOME +"/AWS";
+    if ( EXECUTESHELLCMD.checkIfExists( afolder ) ) {
+      if ( checkIfExists( process.env.AWSHOME ) ) {
+        console.error( __filename +" "+ afolder + " does Not exist.  Please set the environment variable 'AWSHOME'" );
+        process.exitCode = 9;
+        return;
+      } else {
+        // fall thru below.   process.env.AWSHOME is valid.
+      }
+    } else {
+      if ( (afolder != process.env.AWSHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSHOME ) ) {
+        console.error( __filename +" The default "+ afolder + " conflicts with "+ process.env.AWSHOME +".  Please unset the environment variable AWSHOME or remove the folder "+ afolder );
+        process.exitCode = 9;
+        return;
+      }
+      process.env.AWSHOME = afolder;
+    }
+
+    // whether or not process.env.AWSCFNHOME is already set already.. reset it based on the location of this file (./asux.js)
+    const afolder2=process.env.AWSHOME +"/CFN";
+    if ( EXECUTESHELLCMD.checkIfExists( afolder2 ) ) {
+      if ( checkIfExists( process.env.AWSCFNHOME ) ) {
+        console.error( __filename +" "+ afolder2 + " does Not exist.  Please set the environment variable 'AWSCFNHOME'" );
+        process.exitCode = 9;
+        return;
+      } else {
+        // fall thru below.   process.env.AWSCFNHOME is valid.
+      }
+    } else {
+      if ( (afolder2 != process.env.AWSCFNHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSCFNHOME ) ) {
+        console.error( __filename +" The default "+ afolder2 + " conflicts with "+ process.env.AWSCFNHOME +".  Please unset the environment variable AWSCFNHOME or remove the folder "+ afolder2 );
+        process.exitCode = 9;
+        return;
+      }
+      process.env.AWSCFNHOME = afolder2;
+    }
+
+    //-------------------
+    if (process.env.VERBOSE) console.log( "Environment variables: AWSHOME=" + process.env.AWSHOME +", AWSCFNHOME=" + process.env.AWSCFNHOME +"\n" );
+
+    //-------------------
+    // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!  The work gets done within the following call!!
+    processJavaCmd( _CMD );
+
+} // end function processCFNCmd
 
 //============================================================
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
