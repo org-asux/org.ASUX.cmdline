@@ -15,7 +15,7 @@ var ORGASUXHOME = process.env.ORGASUXHOME ? process.env.ORGASUXHOME : "/invalid/
 eval( fs.readFileSync( ORGASUXHOME+'/bin/asux-common.js' ) + '' );
 
 //==========================================================
-var CMDGRP="yaml"; // this entire file is about this CMDGRP
+var CMDGRP="yaml";  // this entire file is about this CMDGRP.   !!! This value is needed within processJavaCmd() - that function is defined within ${ORGASUXFLDR}/bin/asux-common.js
 var COMMAND = "unknown"; // will be set based on what the user enters on the commandline.
 
 //==========================================================
@@ -65,102 +65,62 @@ CmdLine.on('option:verbose', function () {
 });
 
 CmdLine.on('option:offline', function () {
-	console.log("Yeah.  Going _OFFLINE_ " );
+	if (process.env.VERBOSE) console.log("Yeah.  Going _OFFLINE_ " );
 	process.env.OFFLINE = true;
 });
 
 CmdLine.on('command:read', function () {
   COMMAND="read";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:list', function () {
   COMMAND="list";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:table', function () {
   COMMAND="table";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:delete', function () {
   COMMAND="delete";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:insert', function () {
   COMMAND="insert";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:macroyaml', function () {
   COMMAND="macroyaml";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:batch', function () {
   COMMAND="batch";
-  processYAMLCmd(COMMAND);
+	// console.error( __filename +':\nProcessing ARGS command-line: ', CmdLine.args.join(' ') );
+	// console.error( 'Processing FULL command-line: ', process.argv.join(' ') );
+  processJavaCmd(COMMAND);
 });
 
 CmdLine.on('command:replace', function () {
   COMMAND="replace";
-  processYAMLCmd(COMMAND);
+  processJavaCmd(COMMAND);
 });
 
 // Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
 // If we end up here, then .. Show error about unknown command
 CmdLine.on('command:*', function () {
-  console.error('Invalid command: %s\nSee --help for a list of available commands.', CmdLine.args.join(' '));
+  console.error( __filename +':\nInvalid command: %s\nSee --help for a list of available commands.', CmdLine.args.join(' '));
+	console.error( 'FULL command-line: ', process.argv.join(' ') );
   process.exit(21);
 });
 
 //==========================
 CmdLine.parse(process.argv);
-
-//============================================================
-//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-//============================================================
-
-function processYAMLCmd( _CMD) {
-
-  const bIsMavenInstalled = chkMavenInstalled();
-  const DependenciesFile=__dirname + "/etc/classpaths/"+ CMDGRP +"-cmd.dependencies";
-  const CLASSPATH = genDependencyCLASSPATH( DependenciesFile, bIsMavenInstalled );
-
-  // ${CMDCLASS} is defined inside this properties file
-  const props = require ( `${__dirname}/etc/js-source/${CMDGRP}.js-source` )
-
-	//--------------------
-	// pre-scripts (Before running ./cmdline/asux.js)
-	EXECUTESHELLCMD.runPreScripts(); // ignore any exit code from these PRE-scripts
-
-  //--------------------
-  var cmdArgs = copyCmdLineArgs( _CMD, /* _bInsertDoubleHyphen */ true, /* _bAddCmd2Params */ true );
-  // copyCmdLineArgs() is defined within ORGASUXHOME/asux-common.js
-
-	cmdArgs.splice( 0, 0, '-cp' ); // insert ./asux.js as JAVA's 1st cmdline parameter
-  cmdArgs.splice( 1, 0, CLASSPATH ); // insert CLASSPATH as JAVA's  2nd cmdline parameter
-  cmdArgs.splice( 2, 0, "-DORGASUXHOME="+ORGASUXHOME );
-	cmdArgs.splice( 3, 0, props['CMDCLASS'] ); // insert CMDCLASS=org.ASUX.yaml.Cmd as JAVA's  3rd cmdline parameter
-  if (process.env.VERBOSE) console.log( `${__filename} : within /tmp:\n\tjava ` + cmdArgs.join(' ') +"\n" );
-
-  const retCode = EXECUTESHELLCMD.executeSharingSTDOUT ( INITIAL_CWD, 'java', cmdArgs, true, process.env.VERBOSE, false, null );
-  process.exitCode = retCode;
-
-  if ( retCode == 0 ) {
-    if (process.env.VERBOSE) console.log( "\n"+ __filename +": Done!");
-    // process.exitCode = 0;
-  }else{
-    if (process.env.VERBOSE) console.error( '\n'+ __filename +": Failed with error-code "+ retCode +" for: java "+ cmdArgs.join(' '));
-    // process.exit(retCode);
-  }
-
-	//--------------------
-	EXECUTESHELLCMD.runPostScripts(); // ignore any exit code from these Post-scripts
-
-} // end function processYAMLCmd
 
 //============================================================
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
