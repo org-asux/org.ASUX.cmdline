@@ -128,7 +128,9 @@ CmdLine.parse(process.argv);
 
 function processYamlCmd( _CMD) {
 
-    // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!
+  if (process.env.VERBOSE) console.log( "Environment variables (As-Is): AWSHOME=" + process.env.AWSHOME +", AWSCFNHOME=" + process.env.AWSCFNHOME +"\n" );
+
+  // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!
     // yaml batch is the _TOPMOST_ useful capability of the org.ASUX project, as of 2019.
     // So, the ability to invoke code in org.ASUX.AWS.CFN and org.ASUX.AWS-SDK .. within a yaml-batch file .. is NOT-Negotiably important (no arguments: It is a must have capability).
     // So.. by implications, we need to set process.env.AWSHOME and process.env.AWSCFNHOME in here!!
@@ -137,47 +139,63 @@ function processYamlCmd( _CMD) {
     // whether or not process.env.AWSHOME is already set already.. reset it based on the location of this file (./asux.js)
     const afolder=ORGASUXHOME +"/AWS";
     if ( EXECUTESHELLCMD.checkIfExists( afolder ) ) {
-      if ( checkIfExists( process.env.AWSHOME ) ) {
-        console.error( __filename +" "+ afolder + " does Not exist.  Please set the environment variable 'AWSHOME'" );
-        process.exitCode = 9;
-        return;
-      } else {
-        // fall thru below.   process.env.AWSHOME is valid.
-      }
+        if ( (afolder != process.env.AWSHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSHOME ) ) {
+            console.error( __filename +"\nThe default "+ afolder + " conflicts with "+ process.env.AWSHOME +".  Please unset the environment variable AWSHOME or remove the folder "+ afolder );
+            process.exitCode = 9;
+            return;
+        } else {
+            // Ok.  Environment variable process.env.AWSHOME is invalid/not-set.  I'm ok either way.
+            process.env.AWSHOME = afolder;
+        }
     } else {
-      if ( (afolder != process.env.AWSHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSHOME ) ) {
-        console.error( __filename +" The default "+ afolder + " conflicts with "+ process.env.AWSHOME +".  Please unset the environment variable AWSHOME or remove the folder "+ afolder );
-        process.exitCode = 9;
-        return;
+        // hmmm... someone is fucking around with the folder-structure that 'install' created.
+        // The default folder (represented by 'afolder') is missing!!!
+        // perhaps they know how to (figuratively speaking) know how to pop-up open the hood and customize the car thoroughly!
+        if ( checkIfExists( process.env.AWSHOME ) ) {
+          // all good;  Proceed further.
+            // !!!!!! Attention.  Actually, it turns out.. the rest of the asux.js code will NOW _INITIATE_ a git-pull for this project. LOL!
+            // That means the user's attempt to "move" AWSHOME will be completely INEFFECTIVE ;-)  Ha!
+          } else {
+          console.error( __filename +"\nThe default folder "+ afolder + " does Not exist.  EITHER set the environment variable 'AWSHOME' .. or, re-install the entire ASUX.org project from scratch." );
+          process.exitCode = 9;
+          return;
       }
-      process.env.AWSHOME = afolder;
     }
 
     // whether or not process.env.AWSCFNHOME is already set already.. reset it based on the location of this file (./asux.js)
     const afolder2=process.env.AWSHOME +"/CFN";
     if ( EXECUTESHELLCMD.checkIfExists( afolder2 ) ) {
-      if ( checkIfExists( process.env.AWSCFNHOME ) ) {
-        console.error( __filename +" "+ afolder2 + " does Not exist.  Please set the environment variable 'AWSCFNHOME'" );
-        process.exitCode = 9;
-        return;
-      } else {
-        // fall thru below.   process.env.AWSCFNHOME is valid.
-      }
+        if ( (afolder2 != process.env.AWSCFNHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSCFNHOME ) ) {
+          console.error( __filename +"\nThe default "+ afolder2 + " conflicts with "+ process.env.AWSCFNHOME +".  Please unset the environment variable AWSCFNHOME or remove the folder "+ afolder2 );
+          process.exitCode = 9;
+          return;
+        } else {
+          // Ok.  Environment variable process.env.AWSCFNHOME is invalid/not-set.  I'm ok either way.
+          process.env.AWSCFNHOME = afolder2;
+        }
     } else {
-      if ( (afolder2 != process.env.AWSCFNHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSCFNHOME ) ) {
-        console.error( __filename +" The default "+ afolder2 + " conflicts with "+ process.env.AWSCFNHOME +".  Please unset the environment variable AWSCFNHOME or remove the folder "+ afolder2 );
-        process.exitCode = 9;
-        return;
-      }
-      process.env.AWSCFNHOME = afolder2;
+        // hmmm... someone is fucking around with the folder-structure that 'install' created.
+        // The default folder (represented by 'afolder2') is missing!!!
+        // perhaps they know how to (figuratively speaking) know how to pop-up open the hood and customize the car thoroughly!
+        if ( checkIfExists( process.env.AWSCFNHOME ) ) {
+            // all good;  Proceed further.
+            // !!!!!! Attention.  Actually, it turns out.. the rest of the asux.js code will NOW _INITIATE_ a git-pull for this project. LOL!
+            // That means the user's attempt to "move" AWSCFNHOME will be completely INEFFECTIVE ;-)  Ha!
+        } else {
+            console.error( __filename +"\nThe default folder "+ afolder2 + " does Not exist.  EITHER set the environment variable 'AWSCFNHOME' .. or, re-install the entire ASUX.org project from scratch." );
+            process.exitCode = 9;
+            return;
+        }
     }
 
     //-------------------
-    if (process.env.VERBOSE) console.log( "Environment variables: AWSHOME=" + process.env.AWSHOME +", AWSCFNHOME=" + process.env.AWSCFNHOME +"\n" );
+    if (process.env.VERBOSE) console.log( "Environment variables (final): AWSHOME=" + process.env.AWSHOME +", AWSCFNHOME=" + process.env.AWSCFNHOME +"\n" );
+
 
     //-------------------
     // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!  The work gets done within the following call!!
     processJavaCmd( _CMD );
+
 
 } // end function processCFNCmd
 
