@@ -166,7 +166,7 @@ function processYamlCmd( _CMD) {
     const afolder2=process.env.AWSHOME +"/CFN";
     if ( EXECUTESHELLCMD.checkIfExists( afolder2 ) ) {
         if ( (afolder2 != process.env.AWSCFNHOME) && EXECUTESHELLCMD.checkIfExists( process.env.AWSCFNHOME ) ) {
-          console.error( __filename +"\nThe default "+ afolder2 + " conflicts with "+ process.env.AWSCFNHOME +".  Please unset the environment variable AWSCFNHOME or remove the folder "+ afolder2 );
+          console.error( __filename +"\nThe default folder "+ afolder2 + " that contains this asux.js script conflicts with the Environment-variable AWSCFNHOME="+ process.env.AWSCFNHOME +".  Please unset the environment variable AWSCFNHOME or remove the folder "+ afolder2 );
           process.exitCode = 9;
           return;
         } else {
