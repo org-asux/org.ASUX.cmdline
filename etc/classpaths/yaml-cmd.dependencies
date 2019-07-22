@@ -37,6 +37,8 @@ software.amazon.ion:ion-java:jar:1.2.0
 com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.9.6
 joda-time:joda-time:jar:2.8.1
 com.amazonaws:aws-java-sdk-ec2:jar:1.11.541
+com.amazonaws:aws-java-sdk-route53:jar:1.11.541
+com.amazonaws:aws-java-sdk-iam:jar:1.11.541
 com.amazonaws:jmespath-java:jar:1.11.541
 
 
