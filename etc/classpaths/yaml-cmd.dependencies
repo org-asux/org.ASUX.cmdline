@@ -1,7 +1,7 @@
 ### See README.txt and see at bottom
 
 org.asux:aws-sdk:jar:1.0
-+- org.asux:common:jar:1.1:compile
++- org.asux:common:jar:1.2:compile
 +- org.asux:yaml:jar:1.0:compile
 |  \- com.fasterxml.jackson.core:jackson-databind:jar:2.9.9:compile
 |     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0:compile
