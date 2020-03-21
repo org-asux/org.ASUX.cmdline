@@ -9,6 +9,7 @@
 
 //--------------------------
 var fs = require("fs");     // https://nodejs.org/api/fs.html#fs_fs_accesssync_path_mode 
+var CmdLine = require('commander'); // https://github.com/tj/commander.js/
 
 var ORGASUXHOME = process.env.ORGASUXHOME ? process.env.ORGASUXHOME : "/invalid/path/to/parentProject/org.ASUX";
 // file-included - Not a 'require'
