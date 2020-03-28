@@ -35,6 +35,11 @@ CmdLine
 	.usage('[options] <commands ...>')
 	.option('--verbose', 'A value that can be increased by repeating', 0)
 	.option('--offline', 'whether to assume No internet and use cached responses (previously saved)', 0)
+	.option('--SnakeYAML', 'Use YAML.org SnakeYAML reference implementation', 0)
+  .option('--org.yaml.snakeyaml', 'Use YAML.org SnakeYAML reference implementation', 0)
+  .option('--NodeImpl', 'Use YAML.org SnakeYAML reference implementation', 0)
+	.option('--com.esotericsoftware.yamlbeans', 'Use EsotericSoftware.com java.util.Map based implementation', 0)
+  .option('--CollectionsImpl', 'Use EsotericSoftware.com java.util.Map based implementation', 0)
 .command('read ...', 'read/query/ content from YAML files', { isDefault: false, noHelp: true } )
 .command('list ...', 'list RHS-content from YAML files', { isDefault: false, noHelp: true } )
 .command('delete ...', 'delete content from YAML files', { isDefault: false, noHelp: true } )
@@ -69,6 +74,23 @@ CmdLine.on('option:offline', function () {
 	if (process.env.VERBOSE) console.log("Yeah.  Going _OFFLINE_ " );
 	process.env.OFFLINE = true;
 });
+
+CmdLine.on('option:SnakeYAML', function () {
+	if (process.env.VERBOSE) console.log("Yeah.  SnakeYAML implementation." );
+});
+CmdLine.on('option:org.yaml.snakeyaml', function () {
+	if (process.env.VERBOSE) console.log("Yeah.  SnakeYAML implementation." );
+});
+CmdLine.on('option:NodeImpl', function () {
+	if (process.env.VERBOSE) console.log("Yeah.  SnakeYAML implementation." );
+});
+CmdLine.on('option:com.esotericsoftware.yamlbeans', function () {
+	if (process.env.VERBOSE) console.log("Yeah.  EsotericSoftware.com java.util.Map based implementation." );
+});
+CmdLine.on('option:CollectionsImpl', function () {
+	if (process.env.VERBOSE) console.log("Yeah.  EsotericSoftware.com java.util.Map based implementation." );
+});
+
 
 CmdLine.on('command:read', function () {
   COMMAND="read";
