@@ -4,12 +4,11 @@
 ###---------------------------------------------
 
 ## Each INPUT-file must be generated using the command:-
-##      mvn -DoutputFile=${THISFILE}   dependency:tree
-## It should then be edited - to REMOVE the 1st 3 characters of each line.
-## To help others, copy these 5 header lines!   Add a few blank lines to make everyone feel comfortable editing this file!
-## That's it!
+##      mvn -DoutputFile=./cmdline/etc/classpaths/yaml-cmd.dependencies   dependency:tree
+## It should then be edited - to REMOVE the 1st line (uber jar)
+## OPTIONALLY, edited - to REMOVE the 1st 3 characters of each line.
 
-### Notice: extra ':'	
+### Notice: extra ':' O/S-element in the one specific line:
 io.netty:netty-transport-native-epoll:jar:linux-x86_64:4.1.33.Final:runtime	### <---- REPLACE THIS LINE .. with following-line.
 io.netty:netty-transport-native-epoll:jar:4.1.33.Final:runtime
 
@@ -17,6 +16,7 @@ io.netty:netty-transport-native-epoll:jar:4.1.33.Final:runtime
 
 org.slf4j:slf4j-api:jar:1.7.25:compile			### <-- This comes from "dependency:tree" .. but you need the following!!
 
+## Manually added.  Because, otherwise we have the following runtime error!
 org.slf4j:slf4j-simple:jar:1.7.28:runtime
 ###	(RUNTIME ERROR):   SLF4J: Failed to load class org.slf4j.impl.StaticLoggerBinder
 ###	This warning message is reported when the org.slf4j.impl.StaticLoggerBinder class could not be loaded into memory.
