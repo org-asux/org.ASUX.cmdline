@@ -1,55 +1,46 @@
-### See README.txt and see at bottom
-
-org.asux:aws-sdk:jar:1.0
 +- org.asux:common:jar:1.2:compile
-+- org.asux:yaml:jar:1.0:compile
-|  \- com.fasterxml.jackson.core:jackson-databind:jar:2.9.9:compile
-|     +- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0:compile
-|     \- com.fasterxml.jackson.core:jackson-core:jar:2.9.9:compile
+|  \- org.junit.vintage:junit-vintage-engine:jar:5.5.2:compile
+|     +- org.apiguardian:apiguardian-api:jar:1.1.0:compile
+|     +- org.junit.platform:junit-platform-engine:jar:1.5.2:compile
+|     |  +- org.opentest4j:opentest4j:jar:1.2.0:compile
+|     |  \- org.junit.platform:junit-platform-commons:jar:1.5.2:compile
+|     \- junit:junit:jar:4.12:compile
+|        \- org.hamcrest:hamcrest-core:jar:1.3:compile
++- org.asux:yaml:jar:1.1:compile
++- org.asux:language.antlr4:jar:1.0:compile
 +- org.asux:yaml.nodeimpl:jar:1.0:compile
-+- org.junit.vintage:junit-vintage-engine:jar:5.5.1:compile
-|  +- org.apiguardian:apiguardian-api:jar:1.1.0:compile
-|  +- org.junit.platform:junit-platform-engine:jar:1.5.1:compile
-|  |  +- org.opentest4j:opentest4j:jar:1.2.0:compile
-|  |  \- org.junit.platform:junit-platform-commons:jar:1.5.1:compile
-|  \- junit:junit:jar:4.12:compile
-|     \- org.hamcrest:hamcrest-core:jar:1.3:compile
-+- commons-cli:commons-cli:jar:1.4:compile
++- org.antlr:antlr4:jar:4.7.2:compile
+|  +- org.antlr:antlr4-runtime:jar:4.7.2:compile
+|  +- org.antlr:antlr-runtime:jar:3.5.2:compile
+|  +- org.antlr:ST4:jar:4.1:compile
+|  +- org.abego.treelayout:org.abego.treelayout.core:jar:1.0.3:compile
+|  +- org.glassfish:javax.json:jar:1.0.4:compile
+|  \- com.ibm.icu:icu4j:jar:61.1:compile
 +- org.yaml:snakeyaml:jar:1.24:compile
++- commons-cli:commons-cli:jar:1.4:compile
 +- com.opencsv:opencsv:jar:4.6:compile
 |  +- org.apache.commons:commons-lang3:jar:3.8.1:compile
 |  +- org.apache.commons:commons-text:jar:1.3:compile
 |  +- commons-beanutils:commons-beanutils:jar:1.9.3:compile
 |  |  \- commons-collections:commons-collections:jar:3.2.2:compile
 |  \- org.apache.commons:commons-collections4:jar:4.2:compile
-+- com.amazonaws:aws-java-sdk-core:jar:1.11.612:compile
-|  +- commons-logging:commons-logging:jar:1.1.3:compile
-|  +- org.apache.httpcomponents:httpclient:jar:4.5.9:compile
-|  |  +- org.apache.httpcomponents:httpcore:jar:4.4.11:compile
-|  |  \- commons-codec:commons-codec:jar:1.11:compile
-|  +- software.amazon.ion:ion-java:jar:1.0.2:compile
-|  +- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.7:compile
-|  \- joda-time:joda-time:jar:2.8.1:compile
-+- com.amazonaws:aws-java-sdk-ec2:jar:1.11.612:compile
-|  \- com.amazonaws:jmespath-java:jar:1.11.612:compile
-+- com.amazonaws:aws-java-sdk-s3:jar:1.11.612:compile
-|  \- com.amazonaws:aws-java-sdk-kms:jar:1.11.612:compile
-+- software.amazon.awssdk:auth:jar:2.7.14:compile
-|  +- software.amazon.awssdk:annotations:jar:2.7.14:compile
-|  +- software.amazon.awssdk:utils:jar:2.7.14:compile
-|  |  +- org.reactivestreams:reactive-streams:jar:1.0.2:compile
-|  |  \- org.slf4j:slf4j-api:jar:1.7.25:compile
-|  +- software.amazon.awssdk:sdk-core:jar:2.7.14:compile
-|  +- software.amazon.awssdk:regions:jar:2.7.14:compile
-|  +- software.amazon.awssdk:profiles:jar:2.7.14:compile
-|  +- software.amazon.awssdk:http-client-spi:jar:2.7.14:compile
-|  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
++- com.fasterxml.jackson.core:jackson-databind:jar:2.9.9:compile
+|  +- com.fasterxml.jackson.core:jackson-annotations:jar:2.9.0:compile
+|  \- com.fasterxml.jackson.core:jackson-core:jar:2.9.9:compile
 +- software.amazon.awssdk:s3:jar:2.7.14:compile
 |  +- software.amazon.awssdk:aws-xml-protocol:jar:2.7.14:compile
 |  |  \- software.amazon.awssdk:aws-query-protocol:jar:2.7.14:compile
 |  +- software.amazon.awssdk:protocol-core:jar:2.7.14:compile
+|  +- software.amazon.awssdk:sdk-core:jar:2.7.14:compile
+|  |  \- software.amazon.awssdk:profiles:jar:2.7.14:compile
+|  +- software.amazon.awssdk:auth:jar:2.7.14:compile
+|  |  \- software.amazon.eventstream:eventstream:jar:1.0.1:compile
+|  +- software.amazon.awssdk:http-client-spi:jar:2.7.14:compile
+|  +- software.amazon.awssdk:regions:jar:2.7.14:compile
+|  +- software.amazon.awssdk:annotations:jar:2.7.14:compile
 |  +- software.amazon.awssdk:aws-core:jar:2.7.14:compile
 |  +- software.amazon.awssdk:apache-client:jar:2.7.14:runtime
+|  |  \- org.apache.httpcomponents:httpcore:jar:4.4.11:compile
 |  \- software.amazon.awssdk:netty-nio-client:jar:2.7.14:runtime
 |     +- io.netty:netty-codec-http:jar:4.1.33.Final:runtime
 |     +- io.netty:netty-codec-http2:jar:4.1.33.Final:runtime
@@ -63,11 +54,31 @@ org.asux:aws-sdk:jar:1.0
 |     |  \- io.netty:netty-transport-native-unix-common:jar:4.1.33.Final:runtime
 |     \- com.typesafe.netty:netty-reactive-streams-http:jar:2.0.0:runtime
 |        \- com.typesafe.netty:netty-reactive-streams:jar:2.0.0:runtime
-+- com.amazonaws:aws-java-sdk-sts:jar:1.11.612:compile
++- software.amazon.awssdk:utils:jar:2.7.14:compile
+|  +- org.reactivestreams:reactive-streams:jar:1.0.2:compile
+|  \- org.slf4j:slf4j-api:jar:1.7.25:compile
++- com.amazonaws:aws-java-sdk-core:jar:1.11.612:compile
+|  +- commons-logging:commons-logging:jar:1.1.3:compile
+|  +- org.apache.httpcomponents:httpclient:jar:4.5.9:compile
+|  |  \- commons-codec:commons-codec:jar:1.11:compile
+|  +- software.amazon.ion:ion-java:jar:1.0.2:compile
+|  +- com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:jar:2.6.7:compile
+|  \- joda-time:joda-time:jar:2.8.1:compile
++- com.amazonaws:aws-java-sdk-ec2:jar:1.11.612:compile
+|  \- com.amazonaws:jmespath-java:jar:1.11.612:compile
 +- com.amazonaws:aws-java-sdk-route53:jar:1.11.612:compile
-\- com.amazonaws:aws-java-sdk-iam:jar:1.11.612:compile
++- com.amazonaws:aws-java-sdk-iam:jar:1.11.612:compile
++- com.amazonaws:aws-java-sdk-s3:jar:1.11.612:compile
+|  \- com.amazonaws:aws-java-sdk-kms:jar:1.11.612:compile
+\- com.amazonaws:aws-java-sdk-sts:jar:1.11.612:compile
 
-## Manually added
+## Manually added.  Because, otherwise we have the following runtime error!
 org.slf4j:slf4j-simple:jar:1.7.28:runtime
+###	(RUNTIME ERROR):   SLF4J: Failed to load class org.slf4j.impl.StaticLoggerBinder
+###	This warning message is reported when the org.slf4j.impl.StaticLoggerBinder class could not be loaded into memory.
+###	This happens when no appropriate SLF4J binding could be found on the class path.
+###	Placing one (and only one) of slf4j-nop.jar slf4j-simple.jar, slf4j-log4j12.jar, slf4j-jdk14.jar or logback-classic.jar on the class path should solve the problem.
+###	SINCE 1.6.0 As of SLF4J version 1.6, in the absence of a binding, SLF4J will default to a no-operation (NOP) logger implementation.
+###	If you are responsible for packaging an application and do not care about logging, then placing slf4j-nop.jar on the class path of your application will get rid of this warning message.
+###	Note that embedded components such as libraries or frameworks should not declare a dependency on any SLF4J binding but only depend on slf4j-api. When a library declares a compile-time dependency on a SLF4J binding, it imposes that binding on the end-user, thus negating SLF4J's purpose.
 
-### EOF
