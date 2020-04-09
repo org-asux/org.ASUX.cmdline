@@ -80,44 +80,52 @@ CmdLine.on('option:yamlimpl', function () {
 
 CmdLine.on('command:read', function () {
   COMMAND="read";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:list', function () {
   COMMAND="list";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:table', function () {
   COMMAND="table";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:delete', function () {
   COMMAND="delete";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:insert', function () {
   COMMAND="insert";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:macroyaml', function () {
   COMMAND="macroyaml";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:batch', function () {
   COMMAND="batch";
 	// console.error( __filename +':\nProcessing ARGS command-line: ', CmdLine.args.join(' ') );
 	// console.error( 'Processing FULL command-line: ', process.argv.join(' ') );
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 CmdLine.on('command:replace', function () {
   COMMAND="replace";
-  processYamlCmd(COMMAND);
+  const retCode = processYamlCmd(COMMAND);
+  process.exit( retCode );
 });
 
 // Like the 'default' in a switch statement.. .. After all of the above "on" callbacks **FAIL** to trigger, we'll end up here.
@@ -203,8 +211,10 @@ function processYamlCmd( _CMD) {
 
     //-------------------
     // !!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!  The work gets done within the following call!!
-    processJavaCmd( 'yaml', _CMD );
+    const retCode = processJavaCmd( 'yaml', _CMD );
 
+    process.exitCode = retCode;
+    return retCode;
 
 } // end function processCFNCmd
 
